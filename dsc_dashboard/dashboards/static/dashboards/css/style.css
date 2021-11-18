@@ -1,0 +1,137 @@
+html, body {
+    /*background-color:#0B2341;*/
+    background-color:#f4f3ef;
+    font-family: Montserrat,Helvetica Neue,Arial,sans-serif;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight:bold;
+    color:#252422;    
+}
+
+.nav-link {
+    color: #252422;
+}
+
+
+.django-plotly-dash-app-dsc_dashboard {
+    max-width: 98%;
+    margin: 0px auto;
+}
+
+
+.card {
+    background-color: white;
+}
+
+.dash-graph {
+    margin-left: 1%;
+}
+
+#logout {
+    float:right;
+}
+
+/***************************** DIRETORIA *****************************/
+#progress-chamados div {
+    background-color: #ff6353;
+}
+
+.cards-content-info-header:first-of-type {
+    font-weight:bold;
+    color:#252422;
+    border-bottom: 0.5px solid lightgray;
+    height: 35px;
+    margin: 0px;
+    padding: 5px 15px;
+    /*border-radius:10px 10px;*/
+}
+
+.cards-content-info-body:first-of-type {
+    font-size:2em;
+    text-align:center;
+    color:#252422;
+    border-radius:5px 5px;
+
+}
+
+.cards-info-body {
+    display:table;
+    vertical-align:middle;
+    width:100%;
+    padding: 0px;
+}
+
+.div-icon-card-body {
+    display:table-cell;
+    vertical-align:middle;
+    text-align: center;
+    
+}
+
+.div-content-card-body {
+    display:table-cell;
+    vertical-align:middle;
+    height: 40px;
+}
+
+.cards-info {
+    /*border-left: 0.5rem solid 	#252422;*/
+    border-radius: 5px 5px;
+    
+}
+
+.cards-summary {
+    height: 95px;
+    /*border: 0.1px solid 	#252422;*/
+    /*border-left: 0.5rem solid 	#252422;*/
+}
+
+.cards-content-chart-header:first-of-type {
+    font-weight:bold;
+    color:#252422;
+    border-radius:10px 10px;
+}
+
+.cards-chart:first-of-type {
+    height:100%;
+    border-radius: 15px 15px;
+}
+/****************************************************************/
+
+/***************************** USUÁRIOS *****************************/
+#progress-usuarios div {
+    background-color: #ff6353;
+}
+
+.cards-content-info-header-usuarios:first-of-type {
+    font-weight:bold;
+    color: #252422;
+    border-radius:10px 10px;
+}
+
+.cards-content-info-body-usuarios:first-of-type {
+    font-size:2em;
+    text-align:center;
+    color: #252422;
+    border-radius:10px 10px;
+}
+
+.cards-info-usuarios:first-of-type {
+    border: solid #252422;
+    /*border-left: 0.5rem solid 	#ff6353;*/
+    height:100%;
+    border-radius: 15px 15px;
+}
+
+.cards-content-chart-header-usuarios:first-of-type {
+    font-weight:bold;
+    color: #252422;
+    border-radius:10px 10px;
+}
+
+.cards-chart-usuarios:first-of-type {
+    height:100%;
+    border-radius: 15px 15px;
+}
+/****************************************************************/
