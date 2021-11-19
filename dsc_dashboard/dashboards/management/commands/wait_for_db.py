@@ -3,7 +3,7 @@ import time
 from django.db import connection
 from django.db.utils import OperationalError
 from django.core.management.base import BaseCommand
-
+from data_updater import data_zammad
 
 class Command(BaseCommand):
     """Django command that waits for database to be available"""
@@ -15,6 +15,7 @@ class Command(BaseCommand):
         while tries < 10:
             try:
                 connection.ensure_connection()
+                data_zammad.all_tickets()
                 break
             except OperationalError:
                 self.stdout.write('Database unavailable, waiting 1 second...')

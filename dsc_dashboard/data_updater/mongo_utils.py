@@ -11,20 +11,6 @@ def _db_connection():
                             password=os.getenv('MONGODB_PASSWORD'), authSource='admin', authMechanism='SCRAM-SHA-256')
     db = client[os.getenv('MONGODB_DB')]
     return db
-    
-
-def _timestamp_datetime(df_dict):
-    for i in range(len(df_dict)):
-        df_dict[i]['created_at'] = datetime.strptime(str(df_dict[i]['created_at']), "%Y-%m-%d %H:%M:%S.%f") \
-            if df_dict[i]['created_at'] != 'null' else 'null'
-
-        df_dict[i]['close_at'] = datetime.strptime(str(df_dict[i]['close_at']), "%Y-%m-%d %H:%M:%S.%f") \
-            if df_dict[i]['close_at'] != 'null' else 'null'
-
-        df_dict[i]['updated_at'] = datetime.strptime(str(df_dict[i]['updated_at']), "%Y-%m-%d %H:%M:%S.%f") \
-            if df_dict[i]['updated_at'] != 'null' else 'null'
-    
-    return df_dict
 
 def save_data_tickets(df):
     db = _db_connection()
@@ -55,17 +41,16 @@ def save_data_tickets(df):
 
         common.reset_index(drop=True, inplace=True)
         df_common_data_dict = common.to_dict("records")
-        df_common_data_dict = _timestamp_datetime(df_common_data_dict)
 
         for i in range(0,len(df_common_data_dict)):
-            my_collection.replace_one({"number": common['number'][i]},df_common_data_dict[i])
+            my_collection.replace_one({"number": df_common_data_dict[i]['number']},df_common_data_dict[i])
+        
+        print("Atualização de registros dos tickets FINALIZADO...")
             
     if not df_result.empty:
         print("Inserindo novos tickets...")
         df_result.reset_index(drop=True, inplace=True)
         data_dict = df_result.to_dict("records")
-        
-        data_dict = _timestamp_datetime(data_dict)
         my_collection.insert_many(data_dict)
     else:
         print("Nenhum novo ticket!")
