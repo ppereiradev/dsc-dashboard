@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # dev files
-dev/
+dsc_dev/
 
 # macbook
 .DS_Store
