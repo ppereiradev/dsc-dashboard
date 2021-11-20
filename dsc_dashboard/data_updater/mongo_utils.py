@@ -70,3 +70,14 @@ def get_many_tickets(query=None):
     df = pd.DataFrame(data_from_db)
     
     return df
+
+def count_tickets(query=None):
+    db = _db_connection()
+    my_collection = db['tickets']
+    
+    if query is None:
+        count = my_collection.find().count()
+    else:
+        count = my_collection.find(query).count()
+    
+    return count

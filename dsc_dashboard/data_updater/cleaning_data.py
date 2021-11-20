@@ -2,7 +2,7 @@ import pandas as pd
 import os
 from datetime import datetime, timedelta
 
-from .mongo_utils import get_many_tickets
+from .mongo_utils import count_tickets, get_many_tickets
 from .data_zammad import all_tickets
 import calendar
 
@@ -19,16 +19,6 @@ def cleaning_data():
     
     ###############################################  LOADING DATAFRAMES #############################################
 
-    # pegando somente os tickets dos últimos 4 meses
-    df_tickets = get_many_tickets({ "$or": [ {"created_at":{"$gte": (pd.to_datetime("now") - pd.Timedelta(days=120))}},
-                                             {"updated_at":{"$gte":(pd.to_datetime("now") - pd.Timedelta(days=120))}},
-                                             {"close_at":{"$gte":(pd.to_datetime("now") - pd.Timedelta(days=120))}} ]}
-                                )
-
-    if df_tickets.empty:
-        all_tickets()
-        df_tickets = get_many_tickets()
-
     ##################################################################################################################
     ##################################################################################################################
     ##########                                                                                              ##########
@@ -37,7 +27,10 @@ def cleaning_data():
     ##################################################################################################################
     ##################################################################################################################
 
-
+    # pegando somente os tickets dos últimos 4 meses
+    df_tickets = get_many_tickets({ "$or": [ {"created_at":{"$gte": (datetime.now() - timedelta(days=120)) }},
+                                             {"close_at":{"$gte": (datetime.now() - timedelta(days=120)) }} ]})
+    
     ###################################### consertando os dados ##################################################
     df_tickets['created_at'] = df_tickets['created_at'].map(lambda x: x if x != "null" else None)
     df_tickets['close_at'] = df_tickets['close_at'].map(lambda x: x if x != "null" else None)
@@ -79,7 +72,7 @@ def cleaning_data():
     df_abertos.index.name = 'mes/ano'
 
     abertos_mes_atual = df_abertos['qnt'][-1]
-
+    
     ############################### FECHADOS ##################################
     df_fechados = df_tickets.copy()
     df_fechados = df_fechados[(df_fechados['close_at'] <= datetime.now()) & (df_fechados['state'] == "Fechado")]
@@ -99,24 +92,20 @@ def cleaning_data():
     
     fechados_mes_atual = df_fechados['qnt'][-1]
     total_fechados = df_fechados['qnt'].sum()
-
+    
     ########################### ACUMULADOS ######################
-    df_acumulados = df_tickets.copy()
-    df_acumulados = df_acumulados[(df_acumulados['created_at'] <= datetime.now())]
-    df_acumulados = df_acumulados[['created_at', 'close_at', 'state', 'id']]
+    df_acumulados = df_abertos.copy()
     
-    aux_acumulados = {}
-    for i in range(0,len(date_list)):
-        aux_acumulados[pd.to_datetime(date_list[i]).date().strftime('%y-%m')] = df_acumulados[(df_acumulados['created_at'].dt.date <= pd.to_datetime(date_list[i]).date())]['id'].count()
-        aux_acumulados[pd.to_datetime(date_list[i]).date().strftime('%y-%m')] -= df_acumulados[(df_acumulados['close_at'].dt.date <= pd.to_datetime(date_list[i]).date()) & (df_acumulados['state'] == "Fechado")]['id'].count()
+    abertos_antigos = count_tickets({ "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } })
+    fechados_antigos = count_tickets({ "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } })
     
-    acumulados_dict = {}
-    for key in aux_acumulados.keys():
-        acumulados_dict[mes_map[int(key.split('-')[1])] + '/' +  key.split('-')[0]] = aux_acumulados[key]
+    df_acumulados.iloc[0, 0] += abertos_antigos - (df_fechados.iloc[0, 0] + fechados_antigos)
 
-    df_acumulados = pd.DataFrame(acumulados_dict.values(), index=acumulados_dict.keys(), columns=['qnt'])
-    df_acumulados.index.name = 'mes/ano'
+    for i in range(1, len(date_list)):
+        df_acumulados.iloc[i, 0] += df_acumulados.iloc[i - 1, 0] - df_fechados.iloc[i, 0]
+
     acumulados = df_acumulados['qnt'][-1]
+
 
     ''' DF COMPLETO DOS ESTADOS '''
     df_estados = pd.merge(df_abertos,df_fechados, on='mes/ano',how='inner')
