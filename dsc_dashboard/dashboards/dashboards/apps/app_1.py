@@ -1,28 +1,33 @@
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
 import plotly.graph_objects as go
 import plotly.express as px
-import pandas as pd
 import numpy as np
 
-from ..app import app, config_plots
-import datetime
+from ..app import config_plots
 
-def layout_diretoria(clean_data):
+def charts(data):
+    """
+    Build the charts.
 
-    ##################################################################################################################
-    ##################################################################################################################
-    ##########                                                                                              ##########
-    ##########                                           CHARTS                                             ##########
-    ##########                                                                                              ##########
-    ##################################################################################################################
-    ##################################################################################################################
+    Use the ``data`` parameter
+    and use the data to build charts.
 
-    ######### SATISFACAO GRÁFICO #########
-    df_satisfacao = clean_data['df-satisfacao']
+    Parameters
+    ----------
+    data : dict of {str : int and pd.DataFrame}
+        Dictionary that contains integers and pd.DataFrames to use as
+        data in the charts.
+
+    Returns
+    -------
+    dict
+        Dictionary of Plotly charts.
+    """
+    # SATISFAÇÃO
+    df_satisfacao = data['df-satisfacao']
     media_satisfacao = 0.0
     for i in range(0,len(df_satisfacao.index)):
         media_satisfacao += i * df_satisfacao['qnt'][i]
@@ -57,18 +62,16 @@ def layout_diretoria(clean_data):
                                 line_width=3,
                                 line_dash="dash",
                                 line_color="#f17e5d",
-                                annotation_text= "<sup>Fechados: " + str(clean_data['total-fechados']) + " | </sup>"
+                                annotation_text= "<sup>Fechados: " + str(data['total-fechados']) + " | </sup>"
                                                  + "<sup>Respostas: " + str(df_satisfacao['qnt'].sum()) + "</sup><br>"
-                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/clean_data['total-fechados'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
+                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
                                 annotation_position="top",
                                 annotation_font_color="#f17e5d",
                                 annotation_font_size=20)
 
-    ######### END SATISFACAO GRÁFICO #########
-
     
-    ######### CHAMADOS POR ESTADO GRÁFICO #########
-    df_completo_estados = clean_data['df-estados']
+    # CHAMADOS POR ESTADO
+    df_completo_estados = data['df-estados']
     
     chart_estados = go.Figure()
     chart_estados.add_trace(go.Bar(
@@ -76,16 +79,13 @@ def layout_diretoria(clean_data):
         y=df_completo_estados['abertos'],
         name='Abertos',
         marker_color='#FF6353',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
+
     chart_estados.add_trace(go.Bar(
         x=df_completo_estados.index,
         y=df_completo_estados['fechados'],
         name='Fechados',
         marker_color='lightsalmon',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
 
     chart_estados.add_trace(go.Bar(
@@ -93,8 +93,6 @@ def layout_diretoria(clean_data):
         y=df_completo_estados['acumulados'],
         name='Acumulados',
         marker_color='#FEBD11',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
     
     chart_estados.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
@@ -109,36 +107,8 @@ def layout_diretoria(clean_data):
                                 yaxis_title='Quantidade de Chamados',
                                 )
 
-    #chart_leadtime_std = px.bar(df_joined, x=df_joined['categoria'].value_counts().index, y=df_joined['categoria'].value_counts())
-
-    """ chart_leadtime_std.update_layout(
-        paper_bgcolor='white',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font={'color':'#252422'},
-        height=350,
-        margin=dict(l=0, r=10, t=10, b=0),
-        
-        legend_title_text='Estado:',
-        legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="right",
-        x=1,
-    ))
-    """
-    ######### END CHAMADOS POR ESTADO GRÁFICO #########
-
-    ######### DEMANDA GRÁFICO #########
-
-
-
-
-    ######### END DEMANDA GRÁFICO #########
-
-    ######### LEADTIME GRÁFICO #########
-
-    df_leadtime_setores = clean_data['df-leadtime-setores']
+    # LEADTIME
+    df_leadtime_setores = data['df-leadtime-setores']
 
     chart_leadtime_setores = go.Figure()
     
@@ -147,8 +117,6 @@ def layout_diretoria(clean_data):
         y=df_leadtime_setores['Conectividade'],
         name="CCON",
         marker_color='#FF6353',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
  
     chart_leadtime_setores.add_trace(go.Bar(
@@ -156,8 +124,6 @@ def layout_diretoria(clean_data):
         y=df_leadtime_setores['Micro Informática'],
         name="CMI",
         marker_color='lightsalmon',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
 
     chart_leadtime_setores.add_trace(go.Bar(
@@ -165,26 +131,19 @@ def layout_diretoria(clean_data):
         y=df_leadtime_setores['Serviços Computacionais'],
         name="CSC",
         marker_color='#FEBD11',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
 
     chart_leadtime_setores.add_trace(go.Bar(
         x=df_leadtime_setores['mes/ano'],
         y=df_leadtime_setores['Sistemas'],
         name="CSIS",
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
 
     chart_leadtime_setores.add_trace(go.Bar(
         x=df_leadtime_setores['mes/ano'],
         y=df_leadtime_setores['Suporte ao Usuário'],
         name="CSUP",
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
-
 
     chart_leadtime_setores.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
     chart_leadtime_setores.update_layout(
@@ -200,27 +159,7 @@ def layout_diretoria(clean_data):
     )
 
 
-    """ 
-    chart_leadtime_setores.update_traces(
-        showlegend = False,
-        hovertemplate = "Setor: %{customdata[0]}<br>Leadtime: %{customdata[1]:.0f} dias"
-    )
-    
-    chart_leadtime_setores.add_hline(y=df_leadtime_setores['diff'].mean(),
-                                line_width=3,
-                                line_dash="dash",
-                                line_color="yellow",
-                                annotation_text=f"Média: {df_leadtime_setores['diff'].mean():.2f}",
-                                annotation_position="top",
-                                annotation_font_color="yellow",
-                                annotation_font_size=20)
-    """
-
-
-
-
-
-    df_leadtime_unidades = clean_data['df-leadtime-unidades']
+    df_leadtime_unidades = data['df-leadtime-unidades']
     chart_leadtime_unidades = go.Figure()
     
     chart_leadtime_unidades.add_trace(go.Bar(
@@ -228,8 +167,6 @@ def layout_diretoria(clean_data):
         y=df_leadtime_unidades["CODAI"],
         name='CODAI',
         marker_color='#FF6353',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
  
     chart_leadtime_unidades.add_trace(go.Bar(
@@ -237,8 +174,6 @@ def layout_diretoria(clean_data):
         y=df_leadtime_unidades["UABJ"],
         name='UABJ',
         marker_color='lightsalmon',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
 
     chart_leadtime_unidades.add_trace(go.Bar(
@@ -246,24 +181,18 @@ def layout_diretoria(clean_data):
         y=df_leadtime_unidades["UAST"],
         name='UAST',
         marker_color='#FEBD11',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
 
     chart_leadtime_unidades.add_trace(go.Bar(
         x=df_leadtime_unidades['mes/ano'],
         y=df_leadtime_unidades["UACSA"],
         name='UACSA',
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
 
     chart_leadtime_unidades.add_trace(go.Bar(
         x=df_leadtime_unidades['mes/ano'],
         y=df_leadtime_unidades["UAEADTec"],
         name="UAEADTec",
-        #texttemplate='%{y}',
-        #textposition='inside',
     ))
 
 
@@ -279,26 +208,41 @@ def layout_diretoria(clean_data):
         height=350,
         margin=dict(l=0, r=10, t=100, b=0),   
     )
+    
+
+    return {"satisfacao": chart_satisfacao,
+            "estados": chart_estados,
+            "leadtime-setores": chart_leadtime_setores,
+            "leadtime-unidades": chart_leadtime_unidades,
+            }
 
 
-    ######### END LEADTIME GRÁFICO #########
+def app_content(charts, data):
+    """
+    Build the html components.
 
+    Use html components with ``charts`` parameters
+    to build the layout of the dashboard.
 
-    ##################################################################################################################
-    ##################################################################################################################
-    ##########                                                                                              ##########
-    ##########                                      APPLICATION                                             ##########
-    ##########                                                                                              ##########
-    ##################################################################################################################
-    ##################################################################################################################
+    Parameters
+    ----------
+    charts : dict of {str : plotly.graph_objects and plotly.express}
+        Dictionary that contains the charts.
+    data : dict of {str : int and pd.DataFrame}
+        Dictionary that contains integers and pd.DataFrames, but the 
+        integer values are used to build summary cards.
 
-    ''' SUMMARY CARDS' CONTENT '''
+    Returns
+    -------
+    html.Div
+        Div component of the dash_html_components.html.Div.
+    """
     card_abertos_corrente = [
         dbc.CardHeader("Abertos", className='cards-content-info-header'),
         dbc.CardBody(
             [
                 html.Div(html.I(className="far fa-clipboard fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(clean_data['abertos-mes-atual'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['abertos-mes-atual'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -308,7 +252,7 @@ def layout_diretoria(clean_data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-check-double fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(clean_data['fechados-mes-atual'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['fechados-mes-atual'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -318,43 +262,43 @@ def layout_diretoria(clean_data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-archive fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(clean_data['acumulados'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['acumulados'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
 
 
-    ''' FIRST CHARTS CONTENT '''
+    # FIRST CHARTS CONTENT
     chart_satisfacao_dash = [
         
-                dcc.Graph(figure=chart_satisfacao,
+                dcc.Graph(figure=charts["satisfacao"],
                 animate=True, config=config_plots),
     ]
 
-    ''' SECOND CHARTS CONTENT '''
+    # SECOND CHARTS CONTENT
     chart_estados_dash = [
         
-                dcc.Graph(figure=chart_estados,
+                dcc.Graph(figure=charts["estados"],
                 animate=True, config=config_plots),
     ]
 
-    ''' THIRD CHARTS CONTENT '''
+    # THIRD CHARTS CONTENT
     chart_leadtime_setores_dash = [
         
-                dcc.Graph(figure=chart_leadtime_setores,
+                dcc.Graph(figure=charts["leadtime-setores"],
                 animate=True, config=config_plots),
     ]
 
-    ''' FOURTH CHARTS CONTENT '''
+    # FOURTH CHARTS CONTENT
     chart_leadtime_unidades_dash = [
         
-                dcc.Graph(figure=chart_leadtime_unidades,
+                dcc.Graph(figure=charts["leadtime-unidades"],
                 animate=True, config=config_plots),
     ]
 
 
 
-    ''' ROWS CONTENT '''
+    # ROWS CONTENT 
     row_1 = html.Div(
         [
             dbc.Row(
@@ -375,8 +319,6 @@ def layout_diretoria(clean_data):
                 [
                     dbc.Col(dbc.Card(chart_satisfacao_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
                     dbc.Col(dbc.Card(chart_estados_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    #dbc.Col(dbc.Card(chart_satisfacao_dash, className='shadow cards-info'), className='mb-4 col-lg-3 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    #dbc.Col(dbc.Card(chart_satisfacao_dash, className='shadow cards-info'), className='mb-4 col-lg-3 col-md-12 col-sm-12 col-xs-12 col-12'),
                 ],
             ),
         ]
@@ -394,12 +336,25 @@ def layout_diretoria(clean_data):
         ]
     )
 
+    return html.Div([html.Div([row_1, row_2, row_3])])
 
 
-    ''' END CHART CARDS' CONTENT '''
-    ##############################
+def layout(data):
+    """
+    Build the html layout of the first tab.
 
-    ''' final layout render '''
-    layout = html.Div([html.Div([row_1, row_2, row_3])])
+    Use :func:`charts` and :func:`app_content` to fill the
+    layout of the tab using Dash application components.
 
-    return layout
+    Parameters
+    ----------
+    data : dict of {str : int and pd.DataFrame}
+        Dictionary that contains integers and pd.DataFrames to use as
+        data in the charts.
+
+    Returns
+    -------
+    dash_html_components.html
+        Html component composed of charts.
+    """
+    return app_content(charts(data), data)

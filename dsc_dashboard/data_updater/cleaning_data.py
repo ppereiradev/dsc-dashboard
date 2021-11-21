@@ -3,10 +3,43 @@ import os
 from datetime import datetime, timedelta
 
 from .mongo_utils import count_tickets, get_many_tickets
-from .data_zammad import all_tickets
 import calendar
 
 def weekday_count(start, end):
+    """
+    Count week days.
+
+    Count how many week days have between a start and 
+    end date. In other words, it counts how many Monday,
+    Tuesday, Wednesday, Thursday, Friday, Saturday, 
+    and Sunday were in the date interval.
+
+    Parameters
+    ----------
+    start : str
+        String that has a date format (e.g., 01/01/2020)
+        representing the start date of the interval,
+        it has to be less than end date.
+    end : str
+        String that has a date format (e.g., 01/01/2020)
+        representing the end date of the interval,
+        it has to be greater than start date.
+
+    Returns
+    -------
+    dict of {str : int}
+        Dictionary with the amount of week days in the
+        date interval.
+
+    Examples
+    --------
+    >>> _weekday_count('01/01/2020','31/01/2021')
+    {'Monday': 4, 'Tuesday': 4, 'Friday': 5, 'Wednesday': 4,
+    Thursday': 5, 'Sunday': 4, 'Saturday': 4}
+    >>> _weekday_count('01/01/2020','31/12/2021')
+    {'Monday': 52, 'Tuesday': 52, 'Friday': 52, 'Wednesday': 52,
+    'Thursday': 53, 'Sunday': 52, 'Saturday': 52}
+    """
     start_date = datetime.strptime(start, '%d/%m/%Y')
     end_date = datetime.strptime(end, '%d/%m/%Y')
     week = {}
@@ -15,23 +48,27 @@ def weekday_count(start, end):
         week[day] = week[day] + 1 if day in week else 1
     return week
 
-def cleaning_data():
-    
-    ###############################################  LOADING DATAFRAMES #############################################
+def clean_data():
+    """
+    Get, convert, and clean the ticket data.
 
-    ##################################################################################################################
-    ##################################################################################################################
-    ##########                                                                                              ##########
-    ##########                                          TICKETS                                             ##########
-    ##########                                                                                              ##########
-    ##################################################################################################################
-    ##################################################################################################################
+    Get the last four-month ticket data from 
+    the MongoDB, convert MongoDB date into Pandas Datetime,
+    map the tickets states, create the mapping for the months, 
+    and also create a date list of the last 4 months.
 
-    # pegando somente os tickets dos últimos 4 meses
+    Returns
+    -------
+    df_tickets : pd.DataFrame
+        Pandas Dataframe with the clean data of the Zammad tickets.
+    mes_map : dict of {int : str}
+        Dictionary with the number of month and its name in portuguese.
+    date_list : list of str
+        List of strings that represent the date of the last 4 months.
+    """
     df_tickets = get_many_tickets({ "$or": [ {"created_at":{"$gte": (datetime.now() - timedelta(days=120)) }},
                                              {"close_at":{"$gte": (datetime.now() - timedelta(days=120)) }} ]})
     
-    ###################################### consertando os dados ##################################################
     df_tickets['created_at'] = df_tickets['created_at'].map(lambda x: x if x != "null" else None)
     df_tickets['close_at'] = df_tickets['close_at'].map(lambda x: x if x != "null" else None)
     df_tickets['updated_at'] = df_tickets['updated_at'].map(lambda x: x if x != "null" else None)
@@ -51,11 +88,43 @@ def cleaning_data():
 
     df_tickets['state'] = df_tickets['state'].map(estados)
 
-
     mes_map = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",  6: "Junho",  7: "Julho",  8: "Agosto",  9: "Setembro",  10: "Outubro", 11: "Novembro",  12: "Dezembro"}
     date_list = pd.period_range(pd.Timestamp.now().to_period('m')-3, freq='M', periods=4).strftime('%Y-%m-%d').tolist()
 
-    ############################### ABERTOS ##################################
+    return df_tickets, mes_map, date_list
+
+def get_by_state(df_tickets, mes_map, date_list):
+    """
+    Group data by state.
+
+    Separate the data by states of the tickets, then
+    return the grouped data.
+
+    Parameters
+    ----------
+    df_tickets : pd.DataFrame
+        Pandas Dataframe with the clean data of the Zammad tickets.
+    mes_map : dict of {int : str}
+        Dictionary with the number of month and its name in portuguese.
+    date_list : list of str
+        List of strings that represent the date of the last 4 months.
+
+    Returns
+    -------
+    df_estados : pd.DataFrame
+        Pandas Dataframe the amount of tickets grouped by ticket states
+        and month of the year (last four months).
+    abertos_mes_atual : int
+        Integer that represents how many open tickets the current months has.
+    fechados_mes_atual : int
+        Integer that represents how many closed tickets the current months has.
+    total_fechados : int
+        Integer that represents the number of tickets that 
+        was closed.
+    acumulados : int
+        Integer represents the number of tickets that is still open.
+    """
+    # ABERTOS
     df_abertos = df_tickets.copy()
     df_abertos = df_abertos[(df_abertos['created_at'] <= datetime.now())]
     df_abertos = df_abertos[['created_at', 'state', 'id']]
@@ -73,7 +142,7 @@ def cleaning_data():
 
     abertos_mes_atual = df_abertos['qnt'][-1]
     
-    ############################### FECHADOS ##################################
+    # FECHADOS
     df_fechados = df_tickets.copy()
     df_fechados = df_fechados[(df_fechados['close_at'] <= datetime.now()) & (df_fechados['state'] == "Fechado")]
     df_fechados = df_fechados[['close_at', 'state', 'id']]
@@ -93,7 +162,7 @@ def cleaning_data():
     fechados_mes_atual = df_fechados['qnt'][-1]
     total_fechados = df_fechados['qnt'].sum()
     
-    ########################### ACUMULADOS ######################
+    # ACUMULADOS
     df_acumulados = df_abertos.copy()
     
     abertos_antigos = count_tickets({ "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } })
@@ -106,14 +175,35 @@ def cleaning_data():
 
     acumulados = df_acumulados['qnt'][-1]
 
-
-    ''' DF COMPLETO DOS ESTADOS '''
+    # COMPLETE DATAFRAME
     df_estados = pd.merge(df_abertos,df_fechados, on='mes/ano',how='inner')
     df_estados = pd.merge(df_estados,df_acumulados, on='mes/ano',how='inner')
     df_estados.columns = ['abertos', 'fechados', 'acumulados']    
-    #################################################################
+    
+    return df_estados, abertos_mes_atual, fechados_mes_atual, total_fechados, acumulados
 
-    ################################# LEADTIME #################################################
+def get_leadtime(df_tickets, mes_map):
+    """
+    Calculate the leadtime of the tickets.
+
+    Get the tickets then calculate the 
+    leadtime of each sector. Also map sectors name.
+
+    Parameters
+    ----------
+    df_tickets : pd.DataFrame
+        Pandas Dataframe with the clean data of the Zammad tickets.
+    mes_map : dict of {int : str}
+        Dictionary with the number of month and its name in portuguese.
+
+    Returns
+    -------
+    df_leadtime_setores : pd.DataFrame
+        Pandas Dataframe with the leadtime of each sector.
+    df_leadtime_unidades : pd.DataFrame
+        Pandas Dataframe with the leadtime of each campus of 
+        UFRPE.
+    """
     df_leadtime = df_tickets.copy()
     df_leadtime = df_leadtime.dropna(axis=0, subset=['close_at'])
     
@@ -133,25 +223,6 @@ def cleaning_data():
                "UACSA": "UACSA",
                "UAEADTec": "UAEADTec"
                }
-    
-    """ 
-    map_setores = {"SIG@": "CSIS",
-               "SIGAA": "CSIS",
-               "SIPAC": "CSIS",
-               "SIGRH": "CSIS",
-               "Sistemas Diversos": "CSIS",
-               "Web Sites": "CSIS",
-               "Triagem": "CSUP",
-               "Serviços Computacionais": "CSC",
-               "Micro Informática": "CMI",
-               "Conectividade": "CCON",
-               "CODAI": "CODAI",
-               "UABJ": "UABJ",
-               "UAST": "UAST",
-               "UACSA": "UACSA",
-               "UAEADTec": "UAEADTec"
-               }
-    """
 
     df_leadtime['group'] = df_leadtime['group'].map(map_setores)
     
@@ -169,9 +240,7 @@ def cleaning_data():
     df_leadtime_aux['diff'] = df_leadtime_aux['diff']/24
     df_leadtime_aux['diff'] = df_leadtime_aux['diff'].astype(int)
     
-
     setores_list = ["Sistemas","Suporte ao Usuário","Serviços Computacionais","Micro Informática","Conectividade","CODAI","UABJ","UAST","UACSA","UAEADTec"]
-    #setores_list = ["CSIS","CSUP","CSC","CMI","CCON","CODAI","UABJ","UAST","UACSA","UAEADTec"]
 
     for mes in df_leadtime_aux['mes/ano']:
         for setor in setores_list:
@@ -181,7 +250,6 @@ def cleaning_data():
     df_leadtime_aux = df_leadtime_aux.sort_values(by='mes/ano').reset_index(drop=True)
 
     df_leadtime_setores = df_leadtime_aux.loc[df_leadtime_aux['group'].isin(["Sistemas","Suporte ao Usuário","Serviços Computacionais","Micro Informática","Conectividade"])]
-    #df_leadtime_setores = df_leadtime_aux.loc[df_leadtime_aux['group'].isin(["CSIS","CSUP","CSC","CMI","CCON"])]
     df_leadtime_unidades = df_leadtime_aux.loc[df_leadtime_aux['group'].isin(["CODAI","UABJ","UAST","UACSA","UAEADTec"])]
 
     df_leadtime_setores = df_leadtime_setores.pivot_table('diff', 'mes/ano', 'group')
@@ -192,9 +260,33 @@ def cleaning_data():
     df_leadtime_setores['mes/ano'] = df_leadtime_setores['mes/ano'].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
     df_leadtime_unidades['mes/ano'] = df_leadtime_unidades['mes/ano'].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
 
-    ################################# END LEADTIME #################################################
+    return df_leadtime_setores, df_leadtime_unidades
 
-    ######################## QUANTIDADE CHAMADOS ABERTOS DIA DA SEMANA ##############################################
+def get_by_week(df_tickets):
+    """
+    Calculate the amount of tickets by weekday.
+
+    Calculate the number of tickets opened in each
+    week dayi.e., Monday, Tuesday, Wednesday, Thursday,
+    Friday, Saturday, and Sunday). It separetes the tickets
+    opened by web and by telephone.
+
+    Parameters
+    ----------
+    df_tickets : pd.DataFrame
+        Pandas Dataframe with the clean data of the Zammad tickets.
+
+    Returns
+    -------
+    df_portal_semana : pd.DataFrame
+        Pandas Dataframe with the amount of tickets opended
+        over the web in each weekday (i.e., Monday, Tuesday,
+        Wednesday, Thursday, Friday, Saturday, and Sunday).
+    df_telefone_semana : pd.DataFrame
+        Pandas Dataframe with the amount of tickets opended
+        over the telephone in each weekday (i.e., Monday, Tuesday,
+        Wednesday, Thursday, Friday, Saturday, and Sunday).
+    """
     df_semana = df_tickets.copy()
     df_semana = df_semana[['created_at', 'create_article_type']]
     df_semana.columns = ['criado', 'tipo']
@@ -224,28 +316,31 @@ def cleaning_data():
     df_portal_semana = df_semana.loc[df_semana['tipo'] == "Portal", 'dia'].value_counts().rename_axis('dia').reset_index(name='total')
     df_telefone_semana = df_semana.loc[df_semana['tipo'] == "Telefone", 'dia'].value_counts().rename_axis('dia').reset_index(name='total')
     
-    ########### calculating the mean tickets opened last 30 days ################################
-    '''
-    frenquecy_days = weekday_count(df_semana['criado'].min().strftime('%d/%m/%Y'), df_semana['criado'].max().strftime('%d/%m/%Y'))
-    for day in frenquecy_days.keys():
-        try:
-            df_portal_semana.loc[df_portal_semana['dia'] == day, 'media'] = int(df_portal_semana.loc[df_portal_semana['dia'] == day, 'media'].iloc[0]/frenquecy_days[day])
-        except Exception as e:
-            continue
-
-    for day in frenquecy_days.keys():
-        try:
-            df_telefone_semana.loc[df_telefone_semana['dia'] == day, 'media'] = int(df_telefone_semana.loc[df_telefone_semana['dia'] == day, 'media'].iloc[0]/frenquecy_days[day])
-        except Exception as e:
-            continue
-    '''    
-    
     df_portal_semana['dia'] = df_portal_semana['dia'].map(day_translation)
     df_telefone_semana['dia'] = df_telefone_semana['dia'].map(day_translation)
-    
-    ######################## END QUANTIDADE CHAMADOS ABERTOS DIA DA SEMANA ##############################################
 
-    ######################## QUANTIDADE CHAMADOS ABERTOS HORA DO DIA ##############################################
+    return df_portal_semana, df_telefone_semana
+
+def get_by_hour(df_tickets):
+    """
+    Calculate the amount tickets by hour.
+
+    Calculate the amount of tickets opened by hour
+    of the day, the data is divided into two groups:
+    web and telephone.
+
+    Parameters
+    ----------
+    df_tickets : pd.DataFrame
+        Pandas Dataframe with the clean data of the Zammad tickets.
+
+    Returns
+    -------
+    df_horas : pd.DataFrame
+        Pandas Dataframe with the amount of tickets opended
+        each hour of day. The tickets are divided into two groups
+        (i.e., web and telephone).
+    """
     df_horas = df_tickets.copy()
     df_horas = df_horas[['created_at', 'create_article_type']]
     df_horas.columns = ['criado', 'tipo']
@@ -276,18 +371,22 @@ def cleaning_data():
     df_telefone_horas = df_telefone_horas.sort_values(by='hora').reset_index(drop=True)
 
     df_horas = pd.merge(df_portal_horas,df_telefone_horas, on='hora',how='inner', suffixes=('_portal', '_telefone'))
-    ######################## END QUANTIDADE CHAMADOS ABERTOS HORA DO DIA ##############################################
 
+    return df_horas
 
-    ##################################################################################################################
-    ##################################################################################################################
-    ##########                                                                                              ##########
-    ##########                                     GOOGLE FORMS                                             ##########
-    ##########                                                                                              ##########
-    ##################################################################################################################
-    ##################################################################################################################
+def get_satisfaction():
+    """
+    Get the customers' satisfaction data.
 
-    ##################################### GOOGLE FORMS ######################################################
+    Get the customers' satisfaction data from the
+    Google Forms.
+
+    Returns
+    -------
+    df_satisfacao : pd.DataFrame
+        Pandas Dataframe with the customers' satisfaction
+        information.
+    """
     url = f"https://docs.google.com/spreadsheets/d/{os.getenv('GOOGLE_SHEET_ID')}/gviz/tq?tqx=out:csv&sheet={os.getenv('GOOGLE_SHEET_NAME')}"
     df_aux = pd.read_csv(url)
     df_aux.columns = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -296,8 +395,28 @@ def cleaning_data():
     df_satisfacao = pd.DataFrame(None, index =[0,1,2,3,4,5,6,7,8,9,10], columns =['qnt'])
     df_satisfacao['qnt'] = df_satisfacao.index.map(df_aux['b'].value_counts()).fillna(0).astype(int)
     df_satisfacao['percentage'] = df_satisfacao.index.map(df_aux['b'].value_counts(normalize=True) * 100).fillna(0).astype(float)
-    ##################################### END GOOGLE FORMS ######################################################
 
+    return df_satisfacao
+
+def get_data():
+    """
+    Return the processed data.
+
+    Make use of internal functions to get the processed data, 
+    and pass to the dashboard.
+
+    Returns
+    -------
+    dict of {str : int or pd.DataFrame}
+        Dictionary with integers and Pandas DataFrame
+        composed of the processed data.
+    """
+    df_tickets, mes_map, date_list = clean_data()
+    df_estados, abertos_mes_atual, fechados_mes_atual, total_fechados, acumulados  = get_by_state(df_tickets, mes_map, date_list)
+    df_leadtime_setores, df_leadtime_unidades = get_leadtime(df_tickets, mes_map)
+    df_portal_semana, df_telefone_semana = get_by_week(df_tickets)
+    df_horas = get_by_hour(df_tickets)
+    df_satisfacao = get_satisfaction()
 
     return {'total-fechados': total_fechados,
             'df-satisfacao': df_satisfacao,

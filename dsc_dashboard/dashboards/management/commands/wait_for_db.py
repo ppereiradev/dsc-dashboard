@@ -6,10 +6,35 @@ from django.core.management.base import BaseCommand
 from data_updater import data_zammad
 
 class Command(BaseCommand):
-    """Django command that waits for database to be available"""
+    """
+    Base commands to check the database.
 
-    def handle(self, *args, **options):
-        """Handle the command"""
+    Check if the database is up before starting the
+    Django application, and fill the database using
+    the Zammad tickets' information.
+
+    Method
+    ----------
+    handle(*args, **options)
+        Perform the verification on database, and when
+        the database is available, it adds the data collected
+        from Zammad.
+    """
+    def handle(self, *args, **options):   
+        """
+        Check if database is available.
+
+        This method checks and waits for the database, 
+        it also fills the database with the data from
+        Zammad.
+
+        Parameters
+        ----------
+        *args 
+            It is not used.
+        **options 
+            It is not used.
+        """
         self.stdout.write('Waiting for database...')
         tries = 0
         while tries < 10:

@@ -8,21 +8,28 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
-from ..app import app, config_plots
+from ..app import config_plots
 
+def charts(data):
+    """
+    Build the charts.
 
-def layout_corporativas(clean_data):
+    Use the ``data`` parameter
+    and use the data to build charts.
 
-    ##################################################################################################################
-    ##################################################################################################################
-    ##########                                                                                              ##########
-    ##########                                           CHARTS                                             ##########
-    ##########                                                                                              ##########
-    ##################################################################################################################
-    ##################################################################################################################
-  
-    ######### CHAMADOS POR ESTADO GRÁFICO #########
-    df_completo_estados = clean_data['df-estados']
+    Parameters
+    ----------
+    data : dict of {str : int and pd.DataFrame}
+        Dictionary that contains integers and pd.DataFrames to use as
+        data in the charts.
+
+    Returns
+    -------
+    dict
+        Dictionary of Plotly charts.
+    """
+    # CHAMADOS POR ESTADO
+    df_completo_estados = data['df-estados']
     
     chart_estados = go.Figure()
     chart_estados.add_trace(go.Bar(
@@ -57,13 +64,8 @@ def layout_corporativas(clean_data):
                                 yaxis_title='Quantidade de Chamados',
                                 )
 
-
-    ######### END CHAMADOS POR ESTADO GRÁFICO #########
-
-
-    ######### LEADTIME GRÁFICO #########
-
-    df_leadtime_setores = clean_data['df-leadtime-setores']
+    # LEADTIME
+    df_leadtime_setores = data['df-leadtime-setores']
 
     chart_leadtime_setores = go.Figure()
     
@@ -114,28 +116,7 @@ def layout_corporativas(clean_data):
         margin=dict(l=0, r=10, t=100, b=0),   
     )
 
-
-    """ 
-    chart_leadtime_setores.update_traces(
-        showlegend = False,
-        hovertemplate = "Setor: %{customdata[0]}<br>Leadtime: %{customdata[1]:.0f} dias"
-    )
-    
-    chart_leadtime_setores.add_hline(y=df_leadtime_setores['diff'].mean(),
-                                line_width=3,
-                                line_dash="dash",
-                                line_color="yellow",
-                                annotation_text=f"Média: {df_leadtime_setores['diff'].mean():.2f}",
-                                annotation_position="top",
-                                annotation_font_color="yellow",
-                                annotation_font_size=20)
-    """
-
-
-
-
-
-    df_leadtime_unidades = clean_data['df-leadtime-unidades']
+    df_leadtime_unidades = data['df-leadtime-unidades']
     chart_leadtime_unidades = go.Figure()
     
     chart_leadtime_unidades.add_trace(go.Bar(
@@ -185,12 +166,9 @@ def layout_corporativas(clean_data):
         margin=dict(l=0, r=10, t=100, b=0),   
     )
 
-
-    ######### END LEADTIME GRÁFICO #########
-
-    ######################## QUANTIDADE CHAMADOS ABERTOS DIA DA SEMANA ##############################################
-    df_portal_semana = clean_data['df-portal-semana']
-    df_telefone_semana = clean_data['df-telefone-semana']
+    # QUANTIDADE CHAMADOS ABERTOS DIA DA SEMANA
+    df_portal_semana = data['df-portal-semana']
+    df_telefone_semana = data['df-telefone-semana']
     chart_qnt_semana = go.Figure()
     
     chart_qnt_semana.add_trace(go.Bar(
@@ -221,10 +199,9 @@ def layout_corporativas(clean_data):
         height=350,
         margin=dict(l=0, r=10, t=100, b=0),   
     )
-    ######################## END QUANTIDADE CHAMADOS ABERTOS DIA DA SEMANA ##############################################
-
-    ######################## QUANTIDADE CHAMADOS ABERTOS HORA DO DIA ##############################################
-    df_horas = clean_data['df-horas']
+    
+    # QUANTIDADE CHAMADOS ABERTOS HORA DO DIA
+    df_horas = data['df-horas']
     hours_day = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
                 '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
                 '20', '21', '22', '23']
@@ -270,23 +247,40 @@ def layout_corporativas(clean_data):
                         '20hrs', '21hrs', '22hrs', '23hrs']
         )
     )
-    ######################## END QUANTIDADE CHAMADOS ABERTOS HORA DO DIA ##############################################
+    
+    return {"estados": chart_estados,
+            "leadtime-setores": chart_leadtime_setores,
+            "leadtime-unidades": chart_leadtime_unidades,
+            "abertos-qnt-semana": chart_qnt_semana,
+            "abertos-qnt-hora": chart_qnt_hora,
+            }
 
-    ##################################################################################################################
-    ##################################################################################################################
-    ##########                                                                                              ##########
-    ##########                                      APPLICATION                                             ##########
-    ##########                                                                                              ##########
-    ##################################################################################################################
-    ##################################################################################################################
+def app_content(charts, data):
+    """
+    Build the html components.
 
-    ''' SUMMARY CARDS' CONTENT '''
+    Use html components with ``charts`` parameters
+    to build the layout of the dashboard.
+
+    Parameters
+    ----------
+    charts : dict of {str : plotly.graph_objects and plotly.express}
+        Dictionary that contains the charts.
+    data : dict of {str : int and pd.DataFrame}
+        Dictionary that contains integers and pd.DataFrames, but the 
+        integer values are used to build summary cards.
+
+    Returns
+    -------
+    html.Div
+        Div component of the dash_html_components.html.Div.
+    """
     card_abertos_corrente = [
         dbc.CardHeader("Abertos", className='cards-content-info-header'),
         dbc.CardBody(
             [
                 html.Div(html.I(className="far fa-clipboard fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(clean_data['abertos-mes-atual'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['abertos-mes-atual'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -296,7 +290,7 @@ def layout_corporativas(clean_data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-check-double fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(clean_data['fechados-mes-atual'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['fechados-mes-atual'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -306,43 +300,43 @@ def layout_corporativas(clean_data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-archive fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(clean_data['acumulados'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['acumulados'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
 
-    ''' SECOND CHARTS CONTENT '''
+    # SECOND CHARTS CONTENT
     chart_estados_dash = [
-                dcc.Graph(figure=chart_estados,
+                dcc.Graph(figure=charts["estados"],
                 animate=True, config=config_plots),
     ]
 
-    ''' THIRD CHARTS CONTENT '''
+    # THIRD CHARTS CONTENT
     chart_leadtime_setores_dash = [
-                dcc.Graph(figure=chart_leadtime_setores,
+                dcc.Graph(figure=charts["leadtime-setores"],
                 animate=True, config=config_plots),
     ]
 
-    ''' FOURTH CHARTS CONTENT '''
+    # FOURTH CHARTS CONTENT 
     chart_leadtime_unidades_dash = [
-                dcc.Graph(figure=chart_leadtime_unidades,
+                dcc.Graph(figure=charts["leadtime-unidades"],
                 animate=True, config=config_plots),
     ]
 
-    ''' FIFTH CHARTS CONTENT '''
+    # FIFTH CHARTS CONTENT
     chart_semana_dash = [
-                dcc.Graph(figure=chart_qnt_semana,
+                dcc.Graph(figure=charts["abertos-qnt-semana"],
                 animate=True, config=config_plots),
     ]
 
-    ''' SIXTH CHARTS CONTENT '''
+    # SIXTH CHARTS CONTENT
     chart_hora_dash = [
-                dcc.Graph(figure=chart_qnt_hora,
+                dcc.Graph(figure=charts["abertos-qnt-hora"],
                 animate=True, config=config_plots),
     ]
 
 
-    ''' ROWS CONTENT '''
+    # ROWS CONTENT
     row_1 = html.Div(
         [
             dbc.Row(
@@ -384,11 +378,25 @@ def layout_corporativas(clean_data):
     )
 
 
+    return html.Div([html.Div([row_1, row_2, row_3])])
 
-    ''' END CHART CARDS' CONTENT '''
-    ##############################
 
-    ''' final layout render '''
-    layout = html.Div([html.Div([row_1, row_2, row_3])])
+def layout(data):
+    """
+    Build the html layout of the second tab.
 
-    return layout
+    Use :func:`charts` and :func:`app_content` to fill the
+    layout of the tab using Dash application components.
+
+    Parameters
+    ----------
+    data : dict of {str : int and pd.DataFrame}
+        Dictionary that contains integers and pd.DataFrames to use as
+        data in the charts.
+
+    Returns
+    -------
+    dash_html_components.html
+        Html component composed of charts.
+    """
+    return app_content(charts(data), data)

@@ -6,6 +6,14 @@ import pytz
 from .data_zammad import interval_tickets
 
 def start():
+    """
+    Call :func:`interval_tickets` periodically.
+
+    Update periodically the data for the dashboard, this
+    routine runs in background, from Monday through Friday,
+    every two hours from 6am to 6pm, based on America/Recife
+    timezone.
+    """
     REC = pytz.timezone("America/Recife")
     scheduler = BackgroundScheduler()
     trigger = OrTrigger([CronTrigger(day_of_week='mon-fri',hour='6-18/2',timezone=REC)])

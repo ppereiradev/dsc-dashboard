@@ -15,3 +15,8 @@ then build the image:
 
 docker-compose build --build-arg UID=$(id -u)
 docker-compose up -d
+
+to read the documentation:
+
+cd docs/
+make html

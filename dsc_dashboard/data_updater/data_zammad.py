@@ -8,6 +8,15 @@ from datetime import datetime
 from .mongo_utils import save_data_tickets
 
 def all_tickets():
+    """
+    Get all tickets from Zammad.
+
+    Get all tickets from Zammad using its API, put into
+    a Pandas DataFrame, then call :func:`save_data_tickets`
+    to put all data on MongoDB. This function also converts
+    the date string from Zammad into datetime, which is needed
+    for the MongoDB.
+    """
     df = pd.DataFrame()
     page = 1
 
@@ -59,7 +68,21 @@ def all_tickets():
 
 
 def interval_tickets(dias=120):
-    
+    """
+    Get ticket data from a date to today.
+
+    Get tickets from Zammad using its API, getting it from 
+    last ``dias`` util today, then put them into a Pandas DataFrame,
+    call :func:`save_data_tickets` to put data on MongoDB.
+    This function also converts the date string from Zammad
+    into datetime, which is needed for the MongoDB.
+
+    Parameters
+    ----------
+    dias : int
+        Integer that represents how many days before today
+        it will get the tickets.
+    """
     df = pd.DataFrame()
     page = 1
 
