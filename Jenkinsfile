@@ -4,7 +4,8 @@ pipeline {
     stages {
         stage('Cleaning') {
             steps {
-                sh(returnStdout: true, script: '''#!/bin/bash
+                sh(returnStdout: true, script: '''
+                    #!/bin/bash
                     if [ $(docker stop dsc_dashboard_app) ];then
                             docker stop dsc_dashboard_app
                             docker rm dsc_dashboard_app
