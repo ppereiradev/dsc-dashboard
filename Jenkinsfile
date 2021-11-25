@@ -18,8 +18,8 @@ pipeline {
         stage('Deployment') {
             steps {
                 sh '''
-                    docker-compose build --build-arg UID=$(id -u)
-                    docker-compose up -d
+                    /usr/local/bin/docker-compose build --build-arg UID=$(id -u)
+                    /usr/local/bin/docker-compose up -d
                     docker logs dsc_dashboard_app
                    '''
             }
