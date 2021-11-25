@@ -1,9 +1,6 @@
 #!/usr/bin/env groovy
 pipeline {
     agent any
-    triggers {
-        pollSCM('*/5 * * * *')
-    }
     stages {
         stage('Cleaning') {
             steps {
@@ -30,7 +27,6 @@ pipeline {
     }
     post {
         failure {
-            sh "echo ${env.USER_EMAIL}"
             emailext to: "${env.USER_EMAIL}",
             subject: "[ERROR] deploying dashboard: ${currentBuild.fullDisplayName}",
             body: "An error occurred while deploying the dashboard."
