@@ -6,7 +6,7 @@ pipeline {
             steps {
                 sh '''
                     printenv
-                    echo $USERNAME
+                    echo $WORKSPACE_TMP
                    '''
             }
         }
