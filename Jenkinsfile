@@ -30,6 +30,7 @@ pipeline {
     }
     post {
         failure {
+            sh "echo ${env.USER_EMAIL}"
             emailext to: "${env.USER_EMAIL}",
             subject: "[ERROR] deploying dashboard: ${currentBuild.fullDisplayName}",
             body: "An error occurred while deploying the dashboard."
