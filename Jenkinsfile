@@ -4,11 +4,15 @@ pipeline {
     stages {
         stage('Cleaning') {
             steps {
-                sh '''
-                    docker stop dsc_dashboard_app
-                    docker rm dsc_dashboard_app
-                    docker rmi dsc_dashboard_app:0.1.0
-                   '''
+                sh(returnStdout: true, script: '''#!/bin/bash
+                    if [ $(docker stop dsc_dashboard_app) ];then
+                            docker stop dsc_dashboard_app
+                            docker rm dsc_dashboard_app
+                            docker rmi dsc_dashboard_app:0.1.0
+                    else
+                            echo "There is no such container"
+                    fi
+                '''.stripIndent())
             }
         }
         stage('Deployment') {
@@ -22,3 +26,4 @@ pipeline {
         }
     }
 }
+
