@@ -1,6 +1,9 @@
 #!/usr/bin/env groovy
 pipeline {
     agent any
+    triggers {
+        pollSCM('*/5 * * * *')
+    }
     stages {
         stage('Cleaning') {
             steps {
@@ -23,6 +26,18 @@ pipeline {
                     docker logs dsc_dashboard_app
                    '''
             }
+        }
+    }
+    post {
+        failure {
+            mail to: "${env.USER_EMAIL}",
+            subject: "[ERROR] deploying dashboard: ${currentBuild.fullDisplayName}",
+            body: "An error occurred while deploying the dashboard."
+        }
+        success {
+            mail to: "${env.USER_EMAIL}",
+            subject: "[SUCCESS] deploying dashboard: ${currentBuild.fullDisplayName}",
+            body: "All good!"
         }
     }
 }
