@@ -4,7 +4,12 @@ pipeline {
     stages {
         stage('Deployment') {
             steps {
-                sh "docker ps -a"
+                sh """
+                    echo $USERNAME
+                    pwd
+                    cd /home/paulopereira/Documents
+                    ls
+                   """
             }
         }
     }
