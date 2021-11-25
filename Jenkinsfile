@@ -5,9 +5,7 @@ pipeline {
         stage('Deployment') {
             steps {
                 sh """
-                    pwd
-                    cd /home/paulopereira/Documents
-                    ls
+                    echo \$USERNAME
                    """
             }
         }
