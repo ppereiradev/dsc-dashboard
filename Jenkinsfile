@@ -4,9 +4,9 @@ pipeline {
     stages {
         stage('Deployment') {
             steps {
-                sh """
-                    echo \$USERNAME
-                   """
+                sh '''
+                    echo $USERNAME
+                   '''
             }
         }
     }
