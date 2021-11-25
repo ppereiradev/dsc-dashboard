@@ -5,6 +5,7 @@ pipeline {
         stage('Deployment') {
             steps {
                 sh '''
+                    printenv
                     echo $USERNAME
                    '''
             }
