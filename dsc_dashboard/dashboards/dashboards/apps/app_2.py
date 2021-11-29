@@ -107,7 +107,7 @@ def charts(data):
     chart_leadtime_setores.update_layout(
         barmode='group',
         title="Leadtime por Setor da STD (dias)",
-        xaxis_title="Setor",
+        xaxis_title="Mês",
         yaxis_title='Dias',
         paper_bgcolor='white',
         plot_bgcolor='rgba(0,0,0,0)',
@@ -157,7 +157,7 @@ def charts(data):
     chart_leadtime_unidades.update_layout(
         barmode='group',
         title="Leadtime por Unidade Acadêmica (dias)",
-        xaxis_title="Unidade",
+        xaxis_title="Mês",
         yaxis_title='Dias',
         paper_bgcolor='white',
         plot_bgcolor='rgba(0,0,0,0)',
