@@ -77,6 +77,10 @@ def clean_data():
     df_tickets['close_at'] = pd.to_datetime(df_tickets['close_at'])
     df_tickets['updated_at'] = pd.to_datetime(df_tickets['updated_at'])
 
+    df_tickets['created_at'] = df_tickets['created_at'] + pd.DateOffset(hours=-3)
+    df_tickets['close_at'] = df_tickets['close_at'] + pd.DateOffset(hours=-3)
+    df_tickets['updated_at'] = df_tickets['updated_at'] + pd.DateOffset(hours=-3)
+
     estados = {"closed":"Fechado",
                   "open":"Aberto",
                   "resolvido":"Resolvido",
