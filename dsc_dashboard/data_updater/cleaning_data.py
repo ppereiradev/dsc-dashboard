@@ -233,8 +233,17 @@ def get_leadtime(df_tickets, mes_map):
     df_leadtime = df_leadtime[df_leadtime['state'] == 'Fechado']
     df_leadtime = df_leadtime[['state', 'group', 'created_at', 'close_at']]
     
+    # keeping tickets from last 3 months only
+    df_leadtime = df_leadtime[df_leadtime['close_at'] > (datetime.now() - timedelta(days=90))]
+
     df_leadtime['diff'] = df_leadtime['close_at'] - df_leadtime['created_at']
     df_leadtime['diff'] = df_leadtime['diff'].astype('timedelta64[h]')
+
+    # checking if the ticket was closed at the same month that it was created (0 or 1)
+    df_leadtime['flag'] = (df_leadtime['close_at'].dt.month == df_leadtime['created_at'].dt.month).astype(int)
+    
+    # removing tickets that were not created in the same month that they were closed
+    df_leadtime = df_leadtime[df_leadtime['flag'] == 1]
     
     df_leadtime_aux = pd.DataFrame(columns=['mes/ano', 'group', 'diff'])
     for i in range(0, len(df_leadtime['diff'])):
@@ -245,7 +254,7 @@ def get_leadtime(df_tickets, mes_map):
     df_leadtime_aux['diff'] = df_leadtime_aux['diff'].astype(int)
     
     setores_list = ["Sistemas","Suporte ao Usuário","Serviços Computacionais","Micro Informática","Conectividade","CODAI","UABJ","UAST","UACSA","UAEADTec"]
-
+    
     for mes in df_leadtime_aux['mes/ano']:
         for setor in setores_list:
             if setor not in df_leadtime_aux[(df_leadtime_aux['mes/ano'] == mes)]['group'].to_list():
@@ -393,12 +402,13 @@ def get_satisfaction():
     """
     url = f"https://docs.google.com/spreadsheets/d/{os.getenv('GOOGLE_SHEET_ID')}/gviz/tq?tqx=out:csv&sheet={os.getenv('GOOGLE_SHEET_NAME')}"
     df_aux = pd.read_csv(url)
-    df_aux.columns = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    df_aux = df_aux.drop_duplicates(subset='h', keep="last")
+    score_column = df_aux.columns[1]
+    ticket_number_column = df_aux.columns[-1]
+    df_aux = df_aux.drop_duplicates(subset=ticket_number_column, keep="last")
 
     df_satisfacao = pd.DataFrame(None, index =[0,1,2,3,4,5,6,7,8,9,10], columns =['qnt'])
-    df_satisfacao['qnt'] = df_satisfacao.index.map(df_aux['b'].value_counts()).fillna(0).astype(int)
-    df_satisfacao['percentage'] = df_satisfacao.index.map(df_aux['b'].value_counts(normalize=True) * 100).fillna(0).astype(float)
+    df_satisfacao['qnt'] = df_satisfacao.index.map(df_aux[score_column].value_counts()).fillna(0).astype(int)
+    df_satisfacao['percentage'] = df_satisfacao.index.map(df_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
 
     return df_satisfacao
 
@@ -416,7 +426,7 @@ def get_data():
         composed of the processed data.
     """
     df_tickets, mes_map, date_list = clean_data()
-    df_estados, abertos_mes_atual, fechados_mes_atual, total_fechados, acumulados  = get_by_state(df_tickets, mes_map, date_list)
+    df_estados, abertos_mes_atual, fechados_mes_atual, total_fechados, acumulados = get_by_state(df_tickets, mes_map, date_list)
     df_leadtime_setores, df_leadtime_unidades = get_leadtime(df_tickets, mes_map)
     df_portal_semana, df_telefone_semana = get_by_week(df_tickets)
     df_horas = get_by_hour(df_tickets)
