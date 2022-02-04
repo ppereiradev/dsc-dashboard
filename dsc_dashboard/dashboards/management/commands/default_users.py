@@ -17,8 +17,11 @@ class Command(BaseCommand):
                 User.objects.create_superuser(username=options['username'],
                                           email=options['email'],
                                           password=options['password'])
+                print("Superuser created!")
+                
         elif options['username'] is not None:
             if not User.objects.filter(username=options['username']).exists():
                 User.objects.create_user(username=options['username'],
                                           email=options['email'],
                                           password=options['password'])
+                print("User created!")
