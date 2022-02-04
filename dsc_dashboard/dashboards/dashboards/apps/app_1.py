@@ -64,7 +64,8 @@ def charts(data):
                                 line_color="#f17e5d",
                                 annotation_text= "<sup>Fechados: " + str(data['total-fechados']) + " | </sup>"
                                                  + "<sup>Respostas: " + str(df_satisfacao['qnt'].sum()) + "</sup><br>"
-                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
+                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados'])*100:.2f}%".replace('.', ',') 
+                                                 + "</sup><br>"+ f"Média: {media_satisfacao:.2f}".replace('.', ','),
                                 annotation_position="top",
                                 annotation_font_color="#f17e5d",
                                 annotation_font_size=20)

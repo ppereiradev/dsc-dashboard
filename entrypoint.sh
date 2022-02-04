@@ -24,10 +24,21 @@ python manage.py migrate sessions --noinput
 # django_plotly_dash gera um problema na migração com o mongodb, então temos que usar a flag --fake
 python manage.py migrate django_plotly_dash --fake --noinput
 
-# descomente essa linha para criar SU
-#python manage.py createsuperuser --noinput
+python manage.py default_users --username=$DJANGO_SUPERUSER_USERNAME \
+    --email=$DJANGO_SUPERUSER_EMAIL \
+    --password=$DJANGO_SUPERUSER_PASSWORD
 
-#unset DJANGO_SUPERUSER_PASSWORD && unset DJANGO_SUPERUSER_USERNAME && unset DJANGO_SUPERUSER_EMAIL
+python manage.py default_users --username=$DJANGO_DIRETORIA_USERNAME \
+    --email=$DJANGO_DIRETORIA_EMAIL \
+    --password=$DJANGO_DIRETORIA_PASSWORD
+
+python manage.py default_users --username=$DJANGO_CORPORATIVAS_USERNAME \
+    --email=$DJANGO_CORPORATIVAS_EMAIL \
+    --password=$DJANGO_CORPORATIVAS_PASSWORD
+
+python manage.py default_users --username=$DJANGO_CONECTIVIDADE_USERNAME \
+    --email=$DJANGO_CONECTIVIDADE_EMAIL \
+    --password=$DJANGO_CONECTIVIDADE_PASSWORD
 
 python manage.py collectstatic --noinput
 

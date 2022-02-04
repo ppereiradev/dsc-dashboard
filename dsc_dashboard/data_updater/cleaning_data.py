@@ -164,7 +164,7 @@ def get_by_state(df_tickets, mes_map, date_list):
     df_fechados.index.name = 'mes/ano'
     
     fechados_mes_atual = df_fechados['qnt'][-1]
-    total_fechados = df_fechados['qnt'].sum()
+    total_fechados = count_tickets({ "state": "closed" })
     
     # ACUMULADOS
     df_acumulados = df_abertos.copy()

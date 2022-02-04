@@ -20,7 +20,7 @@ def all_tickets():
     df = pd.DataFrame()
     page = 1
 
-    print('FETCHING TICKET DATA FROM ZAMMAD...')
+    print('FETCHING ALL TICKET DATA FROM ZAMMAD...')
     while True:
         
         cmd =  "curl -u " + os.getenv("ZAMMAD_EMAIL") + ":" + os.getenv("ZAMMAD_PASSWORD") + " " + os.getenv("ZAMMAD_HOST") + "/api/v1/tickets?expand=true&page=" + str(page) + "&per_page=100"
@@ -44,7 +44,7 @@ def all_tickets():
         print("[GETTING PAGE: " + str(page) + "]")
         page += 1
     
-    print('ENDED FETCHING TICKET DATA FROM ZAMMAD...')
+    print('ENDED FETCHING ALL TICKET DATA FROM ZAMMAD...')
 
     df = df[['created_at', 'close_at', 'updated_at', 'create_article_type', 'state', 'id', 'number', 'group']]
 
