@@ -12,11 +12,11 @@ Change ownership of volume in docker volumes:
 (ubuntu): chown -R $USER:$USER /var/lib/docker/volumes/volume-name
 
 then build the image:
-```
+```bash
 docker-compose build --build-arg UID=$(id -u) && docker-compose up -d
 ```
 to read the documentation:
-```
+```bash
 cd docs/
 make html
 ```
