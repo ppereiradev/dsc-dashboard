@@ -91,7 +91,7 @@ def clean_data():
                   }
 
     df_tickets['state'] = df_tickets['state'].map(estados)
-
+    
     mes_map = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",  6: "Junho",  7: "Julho",  8: "Agosto",  9: "Setembro",  10: "Outubro", 11: "Novembro",  12: "Dezembro"}
     date_list = pd.period_range(pd.Timestamp.now().to_period('m')-3, freq='M', periods=4).strftime('%Y-%m-%d').tolist()
 
