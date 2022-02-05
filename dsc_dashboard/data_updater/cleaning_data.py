@@ -68,7 +68,7 @@ def clean_data():
     """
     df_tickets = get_many_tickets({ "$or": [ {"created_at":{"$gte": (datetime.now() - timedelta(days=120)) }},
                                              {"close_at":{"$gte": (datetime.now() - timedelta(days=120)) }} ]})
-    
+        
     df_tickets['created_at'] = df_tickets['created_at'].map(lambda x: x if x != "null" else None)
     df_tickets['close_at'] = df_tickets['close_at'].map(lambda x: x if x != "null" else None)
     df_tickets['updated_at'] = df_tickets['updated_at'].map(lambda x: x if x != "null" else None)
