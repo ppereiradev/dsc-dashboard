@@ -24,7 +24,7 @@ python manage.py migrate sessions --noinput
 # django_plotly_dash gera um problema na migração com o mongodb, então temos que usar a flag --fake
 python manage.py migrate django_plotly_dash --fake --noinput
 
-python manage.py default_users --username=$DJANGO_SUPERUSER_USERNAME \
+python manage.py default_users --superuser=yes --username=$DJANGO_SUPERUSER_USERNAME \
     --email=$DJANGO_SUPERUSER_EMAIL \
     --password=$DJANGO_SUPERUSER_PASSWORD
 
