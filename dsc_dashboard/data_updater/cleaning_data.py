@@ -240,14 +240,14 @@ def get_leadtime(df_tickets, mes_map):
     df_leadtime['diff'] = df_leadtime['diff'].astype('timedelta64[h]')
 
     # checking if the ticket was closed at the same month that it was created (0 or 1)
-    df_leadtime['flag'] = (df_leadtime['close_at'].dt.month == df_leadtime['created_at'].dt.month).astype(int)
+    #df_leadtime['flag'] = (df_leadtime['close_at'].dt.month == df_leadtime['created_at'].dt.month).astype(int)
     
     # removing tickets that were not created in the same month that they were closed
-    df_leadtime = df_leadtime[df_leadtime['flag'] == 1]
+    #df_leadtime = df_leadtime[df_leadtime['flag'] == 1]
     
     df_leadtime_aux = pd.DataFrame(columns=['mes/ano', 'group', 'diff'])
     for i in range(0, len(df_leadtime['diff'])):
-        df_leadtime_aux.loc[i] = [df_leadtime['created_at'].iloc[i].date().strftime('%y-%m'), df_leadtime['group'].iloc[i], df_leadtime['diff'].iloc[i]]
+        df_leadtime_aux.loc[i] = [df_leadtime['close_at'].iloc[i].date().strftime('%y-%m'), df_leadtime['group'].iloc[i], df_leadtime['diff'].iloc[i]]
 
     df_leadtime_aux = df_leadtime_aux.groupby(['mes/ano', 'group']).mean().reset_index()
     df_leadtime_aux['diff'] = df_leadtime_aux['diff']/24
