@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 
 from .app import app
-from .apps import app_1, app_2, app_3
+from .apps import app_1, app_2, app_3, app_4, app_5, app_6, app_7
 
 from data_updater.cleaning_data import get_data
 
@@ -28,11 +28,14 @@ def server_layout():
         dbc.Tabs([dbc.Tab(app_1.layout(data), label="Diretoria STD", tab_id='tab-diretoria', tab_style={"marginLeft": "auto"}),
                     dbc.Tab(app_2.layout(data), label="Soluções Corporativas", tab_id='tab-corporativas'),
                     dbc.Tab(app_3.layout(data), label="Conectividade", tab_id='tab-conectividade'),
+                    dbc.Tab(app_4.layout(data), label="Sistemas", tab_id='tab-sistemas'),
+                    dbc.Tab(app_5.layout(data), label="Serviços Computacionais", tab_id='tab-serv-computacionais'),
+                    dbc.Tab(app_6.layout(data), label="Micro Informática", tab_id='tab-micro'),
+                    dbc.Tab(app_7.layout(data), label="Suporte ao Usuário", tab_id='tab-suporte'),
                     ], active_tab="tab-diretoria", id="tabs", className='mb-3'),
         dcc.Interval(id='interval-component',interval=10*60*1000, n_intervals=0), #10*60*1000 == minutes*seconds*milliseconds
         ])
     return server_layout
-
 
 @app.callback(Output('tabs', 'children'),[Input('interval-component', 'n_intervals')])
 def update_metrics(n_intervals):
@@ -58,6 +61,10 @@ def update_metrics(n_intervals):
     components = [dbc.Tab(app_1.layout(data), label="Diretoria STD", tab_id='tab-diretoria', tab_style={"marginLeft": "auto"}),
                   dbc.Tab(app_2.layout(data), label="Soluções Corporativas", tab_id='tab-corporativas'),
                   dbc.Tab(app_3.layout(data), label="Conectividade", tab_id='tab-conectividade'),
+                  dbc.Tab(app_4.layout(data), label="Sistemas", tab_id='tab-sistemas'),
+                  dbc.Tab(app_5.layout(data), label="Serviços Computacionais", tab_id='tab-serv-computacionais'),
+                  dbc.Tab(app_6.layout(data), label="Micro Informática", tab_id='tab-micro'),
+                  dbc.Tab(app_7.layout(data), label="Suporte ao Usuário", tab_id='tab-suporte'),
                   ]
     return components
 

@@ -92,12 +92,14 @@ def clean_data():
 
     df_tickets['state'] = df_tickets['state'].map(estados)
     
-    mes_map = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",  6: "Junho",  7: "Julho",  8: "Agosto",  9: "Setembro",  10: "Outubro", 11: "Novembro",  12: "Dezembro"}
+    mes_map = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 
+               5: "Maio",  6: "Junho",  7: "Julho",  8: "Agosto",  
+               9: "Setembro",  10: "Outubro", 11: "Novembro",  12: "Dezembro"}
     date_list = pd.period_range(pd.Timestamp.now().to_period('m')-3, freq='M', periods=4).strftime('%Y-%m-%d').tolist()
 
     return df_tickets, mes_map, date_list
 
-def get_by_state(df_tickets, mes_map, date_list):
+def get_by_state(df_tickets, mes_map, date_list, sector=None):
     """
     Group data by state.
 
@@ -128,8 +130,44 @@ def get_by_state(df_tickets, mes_map, date_list):
     acumulados : int
         Integer represents the number of tickets that is still open.
     """
+    df_tickets_aux = df_tickets.copy()
+    map_setores = {"SIG@": "Sistemas",
+               "SIGAA": "Sistemas",
+               "SIPAC": "Sistemas",
+               "SIGRH": "Sistemas",
+               "Sistemas Diversos": "Sistemas",
+               "Web Sites": "Sistemas",
+               "Triagem": "Suporte ao Usuário",
+               "Serviços Computacionais": "Serviços Computacionais",
+               "Micro Informática": "Micro Informática",
+               "Conectividade": "Conectividade",
+               "CODAI": "CODAI",
+               "UABJ": "UABJ",
+               "UAST": "UAST",
+               "UACSA": "UACSA",
+               "UAEADTec": "UAEADTec"
+               }
+
+    df_tickets_aux['group'] = df_tickets_aux['group'].map(map_setores)
+    
+    if sector == "Sistemas":
+        df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Sistemas"]
+    
+    elif sector == "Suporte ao Usuário":
+        df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Suporte ao Usuário"]
+    
+    elif sector == "Serviços Computacionais":
+        df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Serviços Computacionais"]
+    
+    elif sector == "Micro Informática":
+        df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Micro Informática"]
+
+    elif sector == "Conectividade":
+        df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Conectividade"]
+
+
     # ABERTOS
-    df_abertos = df_tickets.copy()
+    df_abertos = df_tickets_aux.copy()
     df_abertos = df_abertos[(df_abertos['created_at'] <= datetime.now())]
     df_abertos = df_abertos[['created_at', 'state', 'id']]
     
@@ -147,7 +185,7 @@ def get_by_state(df_tickets, mes_map, date_list):
     abertos_mes_atual = df_abertos['qnt'][-1]
     
     # FECHADOS
-    df_fechados = df_tickets.copy()
+    df_fechados = df_tickets_aux.copy()
     df_fechados = df_fechados[(df_fechados['close_at'] <= datetime.now()) & (df_fechados['state'] == "Fechado")]
     df_fechados = df_fechados[['close_at', 'state', 'id']]
     
@@ -432,6 +470,28 @@ def get_data():
     df_horas = get_by_hour(df_tickets)
     df_satisfacao = get_satisfaction()
 
+    # getting data by sector of STD
+
+    # conectividade
+    df_estados_conectividade, abertos_mes_atual_conectividade, fechados_mes_atual_conectividade, \
+        total_fechados_conectividade, acumulados_conectividade = get_by_state(df_tickets, mes_map, date_list, "Conectividade")
+    
+    # sistemas
+    df_estados_sistemas, abertos_mes_atual_sistemas, fechados_mes_atual_sistemas, \
+        total_fechados_sistemas, acumulados_sistemas = get_by_state(df_tickets, mes_map, date_list, "Sistemas")
+
+    # suporte
+    df_estados_suporte, abertos_mes_atual_suporte, fechados_mes_atual_suporte, \
+        total_fechados_suporte, acumulados_suporte = get_by_state(df_tickets, mes_map, date_list, "Suporte ao Usuário")
+
+    # servicos
+    df_estados_servicos, abertos_mes_atual_servicos, fechados_mes_atual_servicos, \
+        total_fechados_servicos, acumulados_servicos = get_by_state(df_tickets, mes_map, date_list, "Serviços Computacionais")
+    
+    # micro
+    df_estados_micro, abertos_mes_atual_micro, fechados_mes_atual_micro, \
+        total_fechados_micro, acumulados_micro = get_by_state(df_tickets, mes_map, date_list, "Micro Informática")
+
     return {'total-fechados': total_fechados,
             'df-satisfacao': df_satisfacao,
             'df-estados': df_estados,
@@ -443,4 +503,39 @@ def get_data():
             'df-portal-semana': df_portal_semana,
             'df-telefone-semana': df_telefone_semana,
             'df-horas': df_horas,
+
+            # conectividade
+            'total-fechados-conectividade': total_fechados_conectividade,
+            'df-estados-conectividade': df_estados_conectividade,
+            'abertos-mes-atual-conectividade': abertos_mes_atual_conectividade,
+            'fechados-mes-atual-conectividade': fechados_mes_atual_conectividade,
+            'acumulados-conectividade': acumulados_conectividade,
+
+            # sistemas
+            'total-fechados-sistemas': total_fechados_sistemas,
+            'df-estados-sistemas': df_estados_sistemas,
+            'abertos-mes-atual-sistemas': abertos_mes_atual_sistemas,
+            'fechados-mes-atual-sistemas': fechados_mes_atual_sistemas,
+            'acumulados-sistemas': acumulados_sistemas,
+
+            # Suporte ao Usuário
+            'total-fechados-suporte': total_fechados_suporte,
+            'df-estados-suporte': df_estados_suporte,
+            'abertos-mes-atual-suporte': abertos_mes_atual_suporte,
+            'fechados-mes-atual-suporte': fechados_mes_atual_suporte,
+            'acumulados-suporte': acumulados_sistemas,
+
+            # Serviços Computacionais
+            'total-fechados-servicos': total_fechados_servicos,
+            'df-estados-servicos': df_estados_servicos,
+            'abertos-mes-atual-servicos': abertos_mes_atual_servicos,
+            'fechados-mes-atual-servicos': fechados_mes_atual_servicos,
+            'acumulados-servicos': acumulados_servicos,
+
+            # Micro Informática
+            'total-fechados-micro': total_fechados_micro,
+            'df-estados-micro': df_estados_micro,
+            'abertos-mes-atual-micro': abertos_mes_atual_micro,
+            'fechados-mes-atual-micro': fechados_mes_atual_micro,
+            'acumulados-micro': acumulados_micro,
             }

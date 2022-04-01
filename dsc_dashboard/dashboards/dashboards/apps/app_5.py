@@ -62,16 +62,16 @@ def charts(data):
                                 line_width=3,
                                 line_dash="dash",
                                 line_color="#f17e5d",
-                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-conectividade']) + " | </sup>"
+                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-servicos']) + " | </sup>"
                                                  + "<sup>Respostas: " + str(df_satisfacao['qnt'].sum()) + "</sup><br>"
-                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-conectividade'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
+                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-servicos'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
                                 annotation_position="top",
                                 annotation_font_color="#f17e5d",
                                 annotation_font_size=20)
 
     
     # CHAMADOS POR ESTADO
-    df_completo_estados = data['df-estados-conectividade']
+    df_completo_estados = data['df-estados-servicos']
     
     chart_estados = go.Figure()
     chart_estados.add_trace(go.Bar(
@@ -242,7 +242,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="far fa-clipboard fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['abertos-mes-atual-conectividade'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['abertos-mes-atual-servicos'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -252,7 +252,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-check-double fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['fechados-mes-atual-conectividade'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['fechados-mes-atual-servicos'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -262,7 +262,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-archive fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['acumulados-conectividade'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['acumulados-servicos'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
