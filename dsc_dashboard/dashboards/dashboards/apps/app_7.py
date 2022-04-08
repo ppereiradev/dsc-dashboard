@@ -28,6 +28,49 @@ def charts(data):
     dict
         Dictionary of Plotly charts.
     """
+    # SATISFAÇÃO
+    df_satisfacao = data['df-satisfacao-suporte']
+    media_satisfacao = 0.0
+    for i in range(0,len(df_satisfacao.index)):
+        media_satisfacao += i * df_satisfacao['qnt'][i]
+    media_satisfacao = media_satisfacao/df_satisfacao['qnt'].sum()
+
+    chart_satisfacao = px.bar(
+        df_satisfacao,
+        x=df_satisfacao.index,
+        y='qnt',
+        color_discrete_sequence=['#fcc468'],
+        custom_data= np.stack((df_satisfacao.index, df_satisfacao['qnt'], df_satisfacao['percentage']))
+    )
+
+    chart_satisfacao.update_traces(
+        showlegend = False,
+        hovertemplate = "Nota: %{customdata[0]}<br>Qnt. de Votos: %{customdata[1]} </br>Percentual: %{customdata[2]:.2f}%"
+    )
+
+    chart_satisfacao.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    chart_satisfacao.update_layout(
+        title="Satisfação dos Usuários",
+        xaxis_title="Nota",
+        yaxis_title='Quantidade de Votos',
+        paper_bgcolor='white',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color':'#252422', "family":"Montserrat"},
+        height=350,
+        margin=dict(l=0, r=10, t=100, b=0),   
+    )
+
+    chart_satisfacao.add_vline(x=media_satisfacao,
+                                line_width=3,
+                                line_dash="dash",
+                                line_color="#f17e5d",
+                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-suporte']) + " | </sup>"
+                                                 + "<sup>Respostas: " + str(df_satisfacao['qnt'].sum()) + "</sup><br>"
+                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-suporte'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
+                                annotation_position="top",
+                                annotation_font_color="#f17e5d",
+                                annotation_font_size=20)
+
     # CHAMADOS POR ESTADO
     df_completo_estados = data['df-estados-suporte']
     
@@ -116,47 +159,19 @@ def charts(data):
         margin=dict(l=0, r=10, t=100, b=0),   
     )
 
-    df_leadtime_unidades = data['df-leadtime-unidades']
-    chart_leadtime_unidades = go.Figure()
+    df_leadtime_bar = data['df-leadtime-suporte-bar']
+    chart_leadtime_bar = go.Figure()
     
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["CODAI"],
-        name='CODAI',
+    chart_leadtime_bar.add_trace(go.Bar(
+        x=df_leadtime_bar['mes/ano'],
+        y=df_leadtime_bar["diff"],
         marker_color='#FF6353'
     ))
  
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["UABJ"],
-        name='UABJ',
-        marker_color='lightsalmon'
-    ))
-
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["UAST"],
-        name='UAST',
-        marker_color='#FEBD11'
-    ))
-
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["UACSA"],
-        name='UACSA',
-    ))
-
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["UAEADTec"],
-        name="UAEADTec",
-    ))
-
-
-    chart_leadtime_unidades.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
-    chart_leadtime_unidades.update_layout(
+    chart_leadtime_bar.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    chart_leadtime_bar.update_layout(
         barmode='group',
-        title="Leadtime por Unidade Acadêmica (dias)",
+        title="Leadtime Médio (dias)",
         xaxis_title="Mês",
         yaxis_title='Dias',
         paper_bgcolor='white',
@@ -247,12 +262,39 @@ def charts(data):
                         '20hrs', '21hrs', '22hrs', '23hrs']
         )
     )
+
+    df_leadtime_scatter = data['df-leadtime-suporte-scatter']
+    chart_leadtime_scatter = px.scatter(df_leadtime_scatter, x='close_at', y='diff', color="mes/ano", labels={'mes/ano':"Mes/Ano"}, 
+                                        hover_data={'close_at':False,
+                                                    'diff':False,
+                                                    'Aberto':df_leadtime_scatter['created_at'].dt.strftime('%d/%m/%y'),
+                                                    'Fechado':df_leadtime_scatter['close_at'].dt.strftime('%d/%m/%y'),
+                                                    'Dias':df_leadtime_scatter['diff'],
+                            })
     
-    return {"estados": chart_estados,
+    chart_leadtime_scatter.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+
+    chart_leadtime_scatter.update_layout(
+        title="Leadtime (dias)",
+        xaxis_title="Data",
+        yaxis_title='Dias',
+        paper_bgcolor='white',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color':'#252422', "family":"Montserrat"},
+        height=350,
+        margin=dict(l=0, r=10, t=100, b=0),
+    )
+
+    chart_leadtime_scatter.update_traces(marker_size=7)
+    chart_leadtime_scatter.update_xaxes(tickformat="%d/%m/%Y")
+    
+    return {"satisfacao": chart_satisfacao,
+            "estados": chart_estados,
             "leadtime-setores": chart_leadtime_setores,
-            "leadtime-unidades": chart_leadtime_unidades,
+            "leadtime-bar": chart_leadtime_bar,
             "abertos-qnt-semana": chart_qnt_semana,
             "abertos-qnt-hora": chart_qnt_hora,
+            "leadtime-scatter": chart_leadtime_scatter,
             }
 
 def app_content(charts, data):
@@ -305,6 +347,13 @@ def app_content(charts, data):
             className="cards-info-body"),
     ]
 
+    # FIRST CHARTS CONTENT
+    chart_satisfacao_dash = [
+        
+                dcc.Graph(figure=charts["satisfacao"],
+                animate=True, config=config_plots),
+    ]
+
     # SECOND CHARTS CONTENT
     chart_estados_dash = [
                 dcc.Graph(figure=charts["estados"],
@@ -318,8 +367,8 @@ def app_content(charts, data):
     ]
 
     # FOURTH CHARTS CONTENT 
-    chart_leadtime_unidades_dash = [
-                dcc.Graph(figure=charts["leadtime-unidades"],
+    chart_leadtime_bar_dash = [
+                dcc.Graph(figure=charts["leadtime-bar"],
                 animate=True, config=config_plots),
     ]
 
@@ -335,6 +384,12 @@ def app_content(charts, data):
                 animate=True, config=config_plots),
     ]
 
+    # FOURTH CHARTS CONTENT
+    chart_leadtime_scatter_dash = [
+        
+                dcc.Graph(figure=charts["leadtime-scatter"],
+                animate=True, config=config_plots),
+    ]
 
     # ROWS CONTENT
     row_1 = html.Div(
@@ -355,9 +410,9 @@ def app_content(charts, data):
         [
             dbc.Row(
                 [
-                    dbc.Col(dbc.Card(chart_leadtime_setores_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    dbc.Col(dbc.Card(chart_leadtime_unidades_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_satisfacao_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
                     dbc.Col(dbc.Card(chart_estados_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_bar_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
                     
                 ],
             ),
@@ -369,9 +424,9 @@ def app_content(charts, data):
         [
             dbc.Row(
                 [
-                    #dbc.Col(dbc.Card(chart_estados_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    dbc.Col(dbc.Card(chart_semana_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    dbc.Col(dbc.Card(chart_hora_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_scatter_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_semana_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_hora_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
                 ],
             ),
         ]

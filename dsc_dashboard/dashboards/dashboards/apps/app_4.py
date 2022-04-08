@@ -27,7 +27,7 @@ def charts(data):
         Dictionary of Plotly charts.
     """
     # SATISFAÇÃO
-    df_satisfacao = data['df-satisfacao']
+    df_satisfacao = data['df-satisfacao-sistemas']
     media_satisfacao = 0.0
     for i in range(0,len(df_satisfacao.index)):
         media_satisfacao += i * df_satisfacao['qnt'][i]
@@ -107,48 +107,20 @@ def charts(data):
                                 yaxis_title='Quantidade de Chamados',
                                 )
 
-    # LEADTIME
-    df_leadtime_setores = data['df-leadtime-setores']
 
-    chart_leadtime_setores = go.Figure()
+    df_leadtime_bar = data['df-leadtime-sistemas-bar']
+    chart_leadtime_bar = go.Figure()
     
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Conectividade'],
-        name="CCON",
+    chart_leadtime_bar.add_trace(go.Bar(
+        x=df_leadtime_bar['mes/ano'],
+        y=df_leadtime_bar["diff"],
         marker_color='#FF6353',
     ))
- 
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Micro Informática'],
-        name="CMI",
-        marker_color='lightsalmon',
-    ))
 
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Serviços Computacionais'],
-        name="CSC",
-        marker_color='#FEBD11',
-    ))
-
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Sistemas'],
-        name="CSIS",
-    ))
-
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Suporte ao Usuário'],
-        name="CSUP",
-    ))
-
-    chart_leadtime_setores.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
-    chart_leadtime_setores.update_layout(
+    chart_leadtime_bar.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    chart_leadtime_bar.update_layout(
         barmode='group',
-        title="Leadtime por Setor da STD (dias)",
+        title="Leadtime Médio (dias)",
         xaxis_title="Mês",
         yaxis_title='Dias',
         paper_bgcolor='white',
@@ -159,61 +131,59 @@ def charts(data):
     )
 
 
-    df_leadtime_unidades = data['df-leadtime-unidades']
-    chart_leadtime_unidades = go.Figure()
+    df_leadtime_scatter = data['df-leadtime-sistemas-scatter']
+    chart_leadtime_scatter = px.scatter(df_leadtime_scatter, x='close_at', y='diff', color="mes/ano", labels={'mes/ano':"Mes/Ano"}, 
+                                        hover_data={'close_at':False,
+                                                    'diff':False,
+                                                    'Aberto':df_leadtime_scatter['created_at'].dt.strftime('%d/%m/%y'),
+                                                    'Fechado':df_leadtime_scatter['close_at'].dt.strftime('%d/%m/%y'),
+                                                    'Dias':df_leadtime_scatter['diff'],
+                            })
     
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["CODAI"],
-        name='CODAI',
-        marker_color='#FF6353',
-    ))
- 
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["UABJ"],
-        name='UABJ',
-        marker_color='lightsalmon',
-    ))
+    chart_leadtime_scatter.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
 
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["UAST"],
-        name='UAST',
-        marker_color='#FEBD11',
-    ))
-
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["UACSA"],
-        name='UACSA',
-    ))
-
-    chart_leadtime_unidades.add_trace(go.Bar(
-        x=df_leadtime_unidades['mes/ano'],
-        y=df_leadtime_unidades["UAEADTec"],
-        name="UAEADTec",
-    ))
-
-
-    chart_leadtime_unidades.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
-    chart_leadtime_unidades.update_layout(
-        barmode='group',
-        title="Leadtime por Unidade Acadêmica (dias)",
-        xaxis_title="Mês",
+    chart_leadtime_scatter.update_layout(
+        title="Leadtime (dias)",
+        xaxis_title="Data",
         yaxis_title='Dias',
         paper_bgcolor='white',
         plot_bgcolor='rgba(0,0,0,0)',
         font={'color':'#252422', "family":"Montserrat"},
         height=350,
-        margin=dict(l=0, r=10, t=100, b=0),   
+        margin=dict(l=0, r=10, t=100, b=0),
     )
+
+    chart_leadtime_scatter.update_traces(marker_size=7)
+    chart_leadtime_scatter.update_xaxes(tickformat="%d/%m/%Y")
+
+
+    chart_leadtime_box = px.box(df_leadtime_scatter, x="mes/ano", y="diff",
+                                hover_data={'close_at':False,
+                                            'diff':False,
+                                            'Aberto':df_leadtime_scatter['created_at'].dt.strftime('%d/%m/%y'),
+                                            'Fechado':df_leadtime_scatter['close_at'].dt.strftime('%d/%m/%y'),
+                                            'Dias':df_leadtime_scatter['diff'],
+                            })
+    chart_leadtime_box.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+
+    chart_leadtime_box.update_layout(
+        title="Leadtime (dias)",
+        xaxis_title="Data",
+        yaxis_title='Dias',
+        paper_bgcolor='white',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color':'#252422', "family":"Montserrat"},
+        height=350,
+        margin=dict(l=0, r=10, t=100, b=0),
+    )
+
     
 
     return {"satisfacao": chart_satisfacao,
             "estados": chart_estados,
-            "leadtime-setores": chart_leadtime_setores,
-            "leadtime-unidades": chart_leadtime_unidades,
+            "leadtime-bar": chart_leadtime_bar,
+            "leadtime-scatter": chart_leadtime_scatter,
+            "leadtime-box": chart_leadtime_box,
             }
 
 
@@ -282,17 +252,24 @@ def app_content(charts, data):
                 animate=True, config=config_plots),
     ]
 
-    # THIRD CHARTS CONTENT
-    chart_leadtime_setores_dash = [
+    # THREE CHARTS CONTENT
+    chart_leadtime_bar_dash = [
         
-                dcc.Graph(figure=charts["leadtime-setores"],
+                dcc.Graph(figure=charts["leadtime-bar"],
                 animate=True, config=config_plots),
     ]
 
     # FOURTH CHARTS CONTENT
-    chart_leadtime_unidades_dash = [
+    chart_leadtime_scatter_dash = [
         
-                dcc.Graph(figure=charts["leadtime-unidades"],
+                dcc.Graph(figure=charts["leadtime-scatter"],
+                animate=True, config=config_plots),
+    ]
+
+    # FIFTH CHARTS CONTENT
+    chart_leadtime_box_dash = [
+        
+                dcc.Graph(figure=charts["leadtime-box"],
                 animate=True, config=config_plots),
     ]
 
@@ -317,8 +294,9 @@ def app_content(charts, data):
         [
             dbc.Row(
                 [
-                    dbc.Col(dbc.Card(chart_satisfacao_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    dbc.Col(dbc.Card(chart_estados_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_satisfacao_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_estados_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_bar_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
                 ],
             ),
         ]
@@ -329,8 +307,8 @@ def app_content(charts, data):
         [
             dbc.Row(
                 [
-                    dbc.Col(dbc.Card(chart_leadtime_setores_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    dbc.Col(dbc.Card(chart_leadtime_unidades_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_scatter_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_box_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
                 ],
             ),
         ]

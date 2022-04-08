@@ -149,7 +149,7 @@ def charts(data):
     chart_leadtime_setores.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
     chart_leadtime_setores.update_layout(
         barmode='group',
-        title="Leadtime por Setor da STD (dias)",
+        title="Leadtime Médio por Setor da STD (dias)",
         xaxis_title="Mês",
         yaxis_title='Dias',
         paper_bgcolor='white',
@@ -200,7 +200,7 @@ def charts(data):
     chart_leadtime_unidades.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
     chart_leadtime_unidades.update_layout(
         barmode='group',
-        title="Leadtime por Unidade Acadêmica (dias)",
+        title="Leadtime Médio por Unidade Acadêmica (dias)",
         xaxis_title="Mês",
         yaxis_title='Dias',
         paper_bgcolor='white',
@@ -209,12 +209,62 @@ def charts(data):
         height=350,
         margin=dict(l=0, r=10, t=100, b=0),   
     )
+
+
+    df_leadtime_scatter = data['df-leadtime-scatter']
+    chart_leadtime_scatter = px.scatter(df_leadtime_scatter, x='close_at', y='diff', color="mes/ano", labels={'mes/ano':"Mes/Ano"}, 
+                                        hover_data={'close_at':False,
+                                                    'diff':False,
+                                                    'Aberto':df_leadtime_scatter['created_at'].dt.strftime('%d/%m/%y'),
+                                                    'Fechado':df_leadtime_scatter['close_at'].dt.strftime('%d/%m/%y'),
+                                                    'Dias':df_leadtime_scatter['diff'],
+                            })
+    
+    chart_leadtime_scatter.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+
+    chart_leadtime_scatter.update_layout(
+        title="Leadtime Geral (dias)",
+        xaxis_title="Data",
+        yaxis_title='Dias',
+        paper_bgcolor='white',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color':'#252422', "family":"Montserrat"},
+        height=350,
+        margin=dict(l=0, r=10, t=100, b=0),
+    )
+
+    chart_leadtime_scatter.update_traces(marker_size=7)
+    chart_leadtime_scatter.update_xaxes(tickformat="%d/%m/%Y")
+
+
+    chart_leadtime_box = px.box(df_leadtime_scatter, x="mes/ano", y="diff",
+                                hover_data={'close_at':False,
+                                            'diff':False,
+                                            'Aberto':df_leadtime_scatter['created_at'].dt.strftime('%d/%m/%y'),
+                                            'Fechado':df_leadtime_scatter['close_at'].dt.strftime('%d/%m/%y'),
+                                            'Dias':df_leadtime_scatter['diff'],
+                            })
+    chart_leadtime_box.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+
+    chart_leadtime_box.update_layout(
+        title="Leadtime Geral (dias)",
+        xaxis_title="Data",
+        yaxis_title='Dias',
+        paper_bgcolor='white',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color':'#252422', "family":"Montserrat"},
+        height=350,
+        margin=dict(l=0, r=10, t=100, b=0),
+    )
+
     
 
     return {"satisfacao": chart_satisfacao,
             "estados": chart_estados,
             "leadtime-setores": chart_leadtime_setores,
             "leadtime-unidades": chart_leadtime_unidades,
+            "leadtime-scatter": chart_leadtime_scatter,
+            "leadtime-box": chart_leadtime_box,
             }
 
 
@@ -297,6 +347,19 @@ def app_content(charts, data):
                 animate=True, config=config_plots),
     ]
 
+    # FIFTH CHARTS CONTENT
+    chart_leadtime_scatter_dash = [
+        
+                dcc.Graph(figure=charts["leadtime-scatter"],
+                animate=True, config=config_plots),
+    ]
+
+    # SIXTH CHARTS CONTENT
+    chart_leadtime_box_dash = [
+        
+                dcc.Graph(figure=charts["leadtime-box"],
+                animate=True, config=config_plots),
+    ]
 
 
     # ROWS CONTENT 
@@ -318,8 +381,9 @@ def app_content(charts, data):
         [
             dbc.Row(
                 [
-                    dbc.Col(dbc.Card(chart_satisfacao_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    dbc.Col(dbc.Card(chart_estados_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_satisfacao_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_scatter_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_box_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
                 ],
             ),
         ]
@@ -330,8 +394,9 @@ def app_content(charts, data):
         [
             dbc.Row(
                 [
-                    dbc.Col(dbc.Card(chart_leadtime_setores_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    dbc.Col(dbc.Card(chart_leadtime_unidades_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_estados_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_setores_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_unidades_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
                 ],
             ),
         ]

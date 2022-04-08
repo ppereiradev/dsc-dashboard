@@ -131,6 +131,11 @@ def get_by_state(df_tickets, mes_map, date_list, sector=None):
         Integer represents the number of tickets that is still open.
     """
     df_tickets_aux = df_tickets.copy()
+
+    abertos_antigos = count_tickets({ "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } })
+    fechados_antigos = count_tickets({ "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } })
+    total_fechados = count_tickets({ "state": "closed" })
+    
     map_setores = {"SIG@": "Sistemas",
                "SIGAA": "Sistemas",
                "SIPAC": "Sistemas",
@@ -152,19 +157,60 @@ def get_by_state(df_tickets, mes_map, date_list, sector=None):
     
     if sector == "Sistemas":
         df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Sistemas"]
-    
+
+        # getting old open tickets of Sistemas to calculate the acumulados
+        abertos_antigos = count_tickets({ "$and": [ {"group": "SIG@"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        abertos_antigos += count_tickets({ "$and": [ {"group": "SIGAA"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        abertos_antigos += count_tickets({ "$and": [ {"group": "SIPAC"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        abertos_antigos += count_tickets({ "$and": [ {"group": "SIGRH"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        abertos_antigos += count_tickets({ "$and": [ {"group": "Sistemas Diversos"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        abertos_antigos += count_tickets({ "$and": [ {"group": "Web Sites"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+
+        fechados_antigos = count_tickets({ "$and": [ {"group": "SIG@"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        fechados_antigos += count_tickets({ "$and": [ {"group": "SIGAA"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        fechados_antigos += count_tickets({ "$and": [ {"group": "SIPAC"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        fechados_antigos += count_tickets({ "$and": [ {"group": "SIGRH"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        fechados_antigos += count_tickets({ "$and": [ {"group": "Sistemas Diversos"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        fechados_antigos += count_tickets({ "$and": [ {"group": "Web Sites"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+
+        total_fechados = count_tickets({ "$and": [ {"group": "SIG@"}, { "state": "closed" } ] })
+        total_fechados += count_tickets({ "$and": [ {"group": "SIGAA"}, { "state": "closed" } ] })
+        total_fechados += count_tickets({ "$and": [ {"group": "SIPAC"}, { "state": "closed" } ] })
+        total_fechados += count_tickets({ "$and": [ {"group": "SIGRH"}, { "state": "closed" } ] })
+        total_fechados += count_tickets({ "$and": [ {"group": "Sistemas Diversos"}, { "state": "closed" } ] })
+        total_fechados += count_tickets({ "$and": [ {"group": "Web Sites"}, { "state": "closed" } ] })
+
     elif sector == "Suporte ao Usuário":
         df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Suporte ao Usuário"]
+
+        # getting old open tickets of Sistemas to calculate the acumulados
+        abertos_antigos = count_tickets({ "$and": [ {"group": "Triagem"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        fechados_antigos = count_tickets({ "$and": [ {"group": "Triagem"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        total_fechados = count_tickets({ "$and": [ {"group": "Triagem"}, { "state": "closed" } ] })
     
     elif sector == "Serviços Computacionais":
         df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Serviços Computacionais"]
-    
+
+        # getting old open tickets of Sistemas to calculate the acumulados
+        abertos_antigos = count_tickets({ "$and": [ {"group": "Serviços Computacionais"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        fechados_antigos = count_tickets({ "$and": [ {"group": "Serviços Computacionais"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        total_fechados = count_tickets({ "$and": [ {"group": "Serviços Computacionais"}, { "state": "closed" } ] })
+
     elif sector == "Micro Informática":
         df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Micro Informática"]
+
+        # getting old open tickets of Sistemas to calculate the acumulados
+        abertos_antigos = count_tickets({ "$and": [ {"group": "Micro Informática"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        fechados_antigos = count_tickets({ "$and": [ {"group": "Micro Informática"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        total_fechados = count_tickets({ "$and": [ {"group": "Micro Informática"}, { "state": "closed" } ] })
 
     elif sector == "Conectividade":
         df_tickets_aux = df_tickets_aux[df_tickets_aux['group'] == "Conectividade"]
 
+        # getting old open tickets of Sistemas to calculate the acumulados
+        abertos_antigos = count_tickets({ "$and": [ {"group": "Conectividade"}, { "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        fechados_antigos = count_tickets({ "$and": [ {"group": "Conectividade"}, { "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } } ] })
+        total_fechados = count_tickets({ "$and": [ {"group": "Conectividade"}, { "state": "closed" } ] })
 
     # ABERTOS
     df_abertos = df_tickets_aux.copy()
@@ -202,16 +248,15 @@ def get_by_state(df_tickets, mes_map, date_list, sector=None):
     df_fechados.index.name = 'mes/ano'
     
     fechados_mes_atual = df_fechados['qnt'][-1]
-    total_fechados = count_tickets({ "state": "closed" })
     
     # ACUMULADOS
     df_acumulados = df_abertos.copy()
     
-    abertos_antigos = count_tickets({ "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } })
-    fechados_antigos = count_tickets({ "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } })
+    #abertos_antigos = count_tickets({ "created_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } })
+    #fechados_antigos = count_tickets({ "close_at": { "$lte":  (datetime.strptime(date_list[0] + " 23:59:59", '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)) } })
     
     df_acumulados.iloc[0, 0] += abertos_antigos - (df_fechados.iloc[0, 0] + fechados_antigos)
-
+    
     for i in range(1, len(date_list)):
         df_acumulados.iloc[i, 0] += df_acumulados.iloc[i - 1, 0] - df_fechados.iloc[i, 0]
 
@@ -224,7 +269,7 @@ def get_by_state(df_tickets, mes_map, date_list, sector=None):
     
     return df_estados, abertos_mes_atual, fechados_mes_atual, total_fechados, acumulados
 
-def get_leadtime(df_tickets, mes_map):
+def get_leadtime(df_tickets, mes_map, sector=None):
     """
     Calculate the leadtime of the tickets.
 
@@ -271,11 +316,90 @@ def get_leadtime(df_tickets, mes_map):
     df_leadtime = df_leadtime[df_leadtime['state'] == 'Fechado']
     df_leadtime = df_leadtime[['state', 'group', 'created_at', 'close_at']]
     
-    # keeping tickets from last 3 months only
-    df_leadtime = df_leadtime[df_leadtime['close_at'] > (datetime.now() - timedelta(days=90))]
+    # keeping tickets from last 6 months only
+    df_leadtime = df_leadtime[df_leadtime['close_at'] > (datetime.now() - timedelta(days=210))]
+    #df_leadtime = df_leadtime[df_leadtime['created_at'] > datetime(2021, 8, 1, 0, 0, 0, 0)]
 
     df_leadtime['diff'] = df_leadtime['close_at'] - df_leadtime['created_at']
     df_leadtime['diff'] = df_leadtime['diff'].astype('timedelta64[h]')
+
+    if sector is None:
+        df_leadtime_aux = pd.DataFrame(columns=['mes/ano', 'group', 'diff'])
+        for i in range(0, len(df_leadtime['diff'])):
+            df_leadtime_aux.loc[i] = [df_leadtime['close_at'].iloc[i].date().strftime('%y-%m'), df_leadtime['group'].iloc[i], df_leadtime['diff'].iloc[i]]
+
+        df_leadtime_aux = df_leadtime_aux.groupby(['mes/ano', 'group']).mean().reset_index()
+        df_leadtime_aux['diff'] = df_leadtime_aux['diff']/24
+        df_leadtime_aux['diff'] = df_leadtime_aux['diff'].astype(int)
+
+        df_leadtime_scatter = df_leadtime.copy()
+        df_leadtime_scatter['diff'] = df_leadtime_scatter['diff']/24
+        df_leadtime_scatter['diff'] = df_leadtime_scatter['diff'].astype(int)
+
+        df_leadtime_scatter["mes/ano"] = df_leadtime_scatter['close_at'].dt.strftime('%y-%m')
+        mes_map = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",  6: "Junho",  7: "Julho",  8: "Agosto",  9: "Setembro",  10: "Outubro", 11: "Novembro",  12: "Dezembro"}
+        df_leadtime_scatter["mes/ano"] = df_leadtime_scatter["mes/ano"].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
+        
+        setores_list = ["Sistemas","Suporte ao Usuário","Serviços Computacionais","Micro Informática","Conectividade","CODAI","UABJ","UAST","UACSA","UAEADTec"]
+        
+        for mes in df_leadtime_aux['mes/ano']:
+            for setor in setores_list:
+                if setor not in df_leadtime_aux[(df_leadtime_aux['mes/ano'] == mes)]['group'].to_list():
+                    df_leadtime_aux = df_leadtime_aux.append({"mes/ano": mes, "group": setor, "diff": 0}, ignore_index=True)
+            
+        df_leadtime_aux = df_leadtime_aux.sort_values(by='mes/ano').reset_index(drop=True)
+
+        df_leadtime_setores = df_leadtime_aux.loc[df_leadtime_aux['group'].isin(["Sistemas","Suporte ao Usuário","Serviços Computacionais","Micro Informática","Conectividade"])]
+        df_leadtime_unidades = df_leadtime_aux.loc[df_leadtime_aux['group'].isin(["CODAI","UABJ","UAST","UACSA","UAEADTec"])]
+
+        df_leadtime_setores = df_leadtime_setores.pivot_table('diff', 'mes/ano', 'group')
+        df_leadtime_unidades = df_leadtime_unidades.pivot_table('diff', 'mes/ano', 'group')
+
+        df_leadtime_setores = df_leadtime_setores.reset_index(level=[0])
+        df_leadtime_unidades = df_leadtime_unidades.reset_index(level=[0])
+        df_leadtime_setores['mes/ano'] = df_leadtime_setores['mes/ano'].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
+        df_leadtime_unidades['mes/ano'] = df_leadtime_unidades['mes/ano'].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
+
+        return df_leadtime_setores, df_leadtime_unidades, df_leadtime_scatter
+
+    elif sector == "Sistemas":
+        df_leadtime = df_leadtime[df_leadtime['group'] == "Sistemas"]
+
+    elif sector == "Suporte ao Usuário":
+        df_leadtime = df_leadtime[df_leadtime['group'] == "Suporte ao Usuário"]
+    
+    elif sector == "Serviços Computacionais":
+        df_leadtime = df_leadtime[df_leadtime['group'] == "Serviços Computacionais"]
+
+    elif sector == "Micro Informática":
+        df_leadtime = df_leadtime[df_leadtime['group'] == "Micro Informática"]
+
+    elif sector == "Conectividade":
+        df_leadtime = df_leadtime[df_leadtime['group'] == "Conectividade"]
+
+    df_leadtime = df_leadtime.reset_index(drop=True)
+    df_leadtime_scatter = df_leadtime.copy()
+    df_leadtime_scatter["mes/ano"] = df_leadtime_scatter['close_at'].dt.strftime('%y-%m')
+    mes_map = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",  6: "Junho",  7: "Julho",  8: "Agosto",  9: "Setembro",  10: "Outubro", 11: "Novembro",  12: "Dezembro"}
+    df_leadtime_scatter["mes/ano"] = df_leadtime_scatter["mes/ano"].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
+
+    df_leadtime_scatter['diff'] = df_leadtime_scatter['diff']/24
+    df_leadtime_scatter['diff'] = df_leadtime_scatter['diff'].astype(int)
+
+    df_leadtime['diff'] = df_leadtime['diff']/24
+    df_leadtime['diff'] = df_leadtime['diff'].astype(int)
+
+    df_leadtime_aux = pd.DataFrame(columns=['mes/ano', 'diff'])
+    for i in range(0, len(df_leadtime['diff'])):
+        df_leadtime_aux.loc[i] = [df_leadtime['close_at'].iloc[i].date().strftime('%y-%m'), df_leadtime['diff'].iloc[i]]
+
+    df_leadtime_aux = df_leadtime_aux.groupby(['mes/ano']).mean().reset_index()
+    df_leadtime_aux['mes/ano'] = df_leadtime_aux['mes/ano'].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
+    df_leadtime = df_leadtime_aux
+    df_leadtime['diff'] = df_leadtime['diff'].astype(int)
+    
+    return df_leadtime, df_leadtime_scatter
+
 
     # checking if the ticket was closed at the same month that it was created (0 or 1)
     #df_leadtime['flag'] = (df_leadtime['close_at'].dt.month == df_leadtime['created_at'].dt.month).astype(int)
@@ -283,35 +407,7 @@ def get_leadtime(df_tickets, mes_map):
     # removing tickets that were not created in the same month that they were closed
     #df_leadtime = df_leadtime[df_leadtime['flag'] == 1]
     
-    df_leadtime_aux = pd.DataFrame(columns=['mes/ano', 'group', 'diff'])
-    for i in range(0, len(df_leadtime['diff'])):
-        df_leadtime_aux.loc[i] = [df_leadtime['close_at'].iloc[i].date().strftime('%y-%m'), df_leadtime['group'].iloc[i], df_leadtime['diff'].iloc[i]]
-
-    df_leadtime_aux = df_leadtime_aux.groupby(['mes/ano', 'group']).mean().reset_index()
-    df_leadtime_aux['diff'] = df_leadtime_aux['diff']/24
-    df_leadtime_aux['diff'] = df_leadtime_aux['diff'].astype(int)
     
-    setores_list = ["Sistemas","Suporte ao Usuário","Serviços Computacionais","Micro Informática","Conectividade","CODAI","UABJ","UAST","UACSA","UAEADTec"]
-    
-    for mes in df_leadtime_aux['mes/ano']:
-        for setor in setores_list:
-            if setor not in df_leadtime_aux[(df_leadtime_aux['mes/ano'] == mes)]['group'].to_list():
-                df_leadtime_aux = df_leadtime_aux.append({"mes/ano": mes, "group": setor, "diff": 0}, ignore_index=True)
-        
-    df_leadtime_aux = df_leadtime_aux.sort_values(by='mes/ano').reset_index(drop=True)
-
-    df_leadtime_setores = df_leadtime_aux.loc[df_leadtime_aux['group'].isin(["Sistemas","Suporte ao Usuário","Serviços Computacionais","Micro Informática","Conectividade"])]
-    df_leadtime_unidades = df_leadtime_aux.loc[df_leadtime_aux['group'].isin(["CODAI","UABJ","UAST","UACSA","UAEADTec"])]
-
-    df_leadtime_setores = df_leadtime_setores.pivot_table('diff', 'mes/ano', 'group')
-    df_leadtime_unidades = df_leadtime_unidades.pivot_table('diff', 'mes/ano', 'group')
-
-    df_leadtime_setores = df_leadtime_setores.reset_index(level=[0])
-    df_leadtime_unidades = df_leadtime_unidades.reset_index(level=[0])
-    df_leadtime_setores['mes/ano'] = df_leadtime_setores['mes/ano'].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
-    df_leadtime_unidades['mes/ano'] = df_leadtime_unidades['mes/ano'].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
-
-    return df_leadtime_setores, df_leadtime_unidades
 
 def get_by_week(df_tickets):
     """
@@ -425,7 +521,7 @@ def get_by_hour(df_tickets):
 
     return df_horas
 
-def get_satisfaction():
+def get_satisfaction(df_tickets, sector=None):
     """
     Get the customers' satisfaction data.
 
@@ -438,17 +534,74 @@ def get_satisfaction():
         Pandas Dataframe with the customers' satisfaction
         information.
     """
+
+    map_setores = {"SIG@": "Sistemas",
+               "SIGAA": "Sistemas",
+               "SIPAC": "Sistemas",
+               "SIGRH": "Sistemas",
+               "Sistemas Diversos": "Sistemas",
+               "Web Sites": "Sistemas",
+               "Triagem": "Suporte ao Usuário",
+               "Serviços Computacionais": "Serviços Computacionais",
+               "Micro Informática": "Micro Informática",
+               "Conectividade": "Conectividade",
+               "CODAI": "CODAI",
+               "UABJ": "UABJ",
+               "UAST": "UAST",
+               "UACSA": "UACSA",
+               "UAEADTec": "UAEADTec"
+               }
+    df_satisfacao_aux = df_tickets.copy()
+    df_satisfacao_aux['group'] = df_satisfacao_aux['group'].map(map_setores)
+
+
     url = f"https://docs.google.com/spreadsheets/d/{os.getenv('GOOGLE_SHEET_ID')}/gviz/tq?tqx=out:csv&sheet={os.getenv('GOOGLE_SHEET_NAME')}"
     df_aux = pd.read_csv(url)
     score_column = df_aux.columns[1]
     ticket_number_column = df_aux.columns[-1]
     df_aux = df_aux.drop_duplicates(subset=ticket_number_column, keep="last")
-
     df_satisfacao = pd.DataFrame(None, index =[0,1,2,3,4,5,6,7,8,9,10], columns =['qnt'])
-    df_satisfacao['qnt'] = df_satisfacao.index.map(df_aux[score_column].value_counts()).fillna(0).astype(int)
-    df_satisfacao['percentage'] = df_satisfacao.index.map(df_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
+
+    df_satisfacao_aux['number'], df_aux[ticket_number_column] = df_satisfacao_aux['number'].astype(int), df_aux[ticket_number_column].astype(int)
+    df_satisfacao_aux = pd.merge(df_satisfacao_aux, df_aux, left_on='number', right_on=ticket_number_column,how='inner')
+
+    if sector is None: 
+        df_satisfacao['qnt'] = df_satisfacao.index.map(df_aux[score_column].value_counts()).fillna(0).astype(int)
+        df_satisfacao['percentage'] = df_satisfacao.index.map(df_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
+        
+    elif sector == "Sistemas":
+        df_satisfacao_aux = df_satisfacao_aux[df_satisfacao_aux['group'] == "Sistemas"]
+        
+        df_satisfacao['qnt'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts()).fillna(0).astype(int)
+        df_satisfacao['percentage'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
+
+    elif sector == "Suporte ao Usuário":
+        df_satisfacao_aux = df_satisfacao_aux[df_satisfacao_aux['group'] == "Suporte ao Usuário"]
+        
+        df_satisfacao['qnt'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts()).fillna(0).astype(int)
+        df_satisfacao['percentage'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
+    
+    elif sector == "Serviços Computacionais":
+        df_satisfacao_aux = df_satisfacao_aux[df_satisfacao_aux['group'] == "Serviços Computacionais"]
+        
+        df_satisfacao['qnt'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts()).fillna(0).astype(int)
+        df_satisfacao['percentage'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
+
+    elif sector == "Micro Informática":
+        df_satisfacao_aux = df_satisfacao_aux[df_satisfacao_aux['group'] == "Micro Informática"]
+        
+        df_satisfacao['qnt'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts()).fillna(0).astype(int)
+        df_satisfacao['percentage'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
+
+    elif sector == "Conectividade":
+        df_satisfacao_aux = df_satisfacao_aux[df_satisfacao_aux['group'] == "Conectividade"]
+        
+        df_satisfacao['qnt'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts()).fillna(0).astype(int)
+        df_satisfacao['percentage'] = df_satisfacao.index.map(df_satisfacao_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
 
     return df_satisfacao
+
+
 
 def get_data():
     """
@@ -465,10 +618,10 @@ def get_data():
     """
     df_tickets, mes_map, date_list = clean_data()
     df_estados, abertos_mes_atual, fechados_mes_atual, total_fechados, acumulados = get_by_state(df_tickets, mes_map, date_list)
-    df_leadtime_setores, df_leadtime_unidades = get_leadtime(df_tickets, mes_map)
+    df_leadtime_setores, df_leadtime_unidades, df_leadtime_scatter = get_leadtime(df_tickets, mes_map)
     df_portal_semana, df_telefone_semana = get_by_week(df_tickets)
     df_horas = get_by_hour(df_tickets)
-    df_satisfacao = get_satisfaction()
+    df_satisfacao = get_satisfaction(df_tickets)
 
     # getting data by sector of STD
 
@@ -476,21 +629,37 @@ def get_data():
     df_estados_conectividade, abertos_mes_atual_conectividade, fechados_mes_atual_conectividade, \
         total_fechados_conectividade, acumulados_conectividade = get_by_state(df_tickets, mes_map, date_list, "Conectividade")
     
+    df_leadtime_conectividade_bar, df_leadtime_conectividade_scatter = get_leadtime(df_tickets, mes_map, "Conectividade")
+    df_satisfacao_conectividade = get_satisfaction(df_tickets, "Conectividade")
+    
+    
     # sistemas
     df_estados_sistemas, abertos_mes_atual_sistemas, fechados_mes_atual_sistemas, \
         total_fechados_sistemas, acumulados_sistemas = get_by_state(df_tickets, mes_map, date_list, "Sistemas")
 
+    df_leadtime_sistemas_bar, df_leadtime_sistemas_scatter = get_leadtime(df_tickets, mes_map, "Sistemas")
+    df_satisfacao_sistemas = get_satisfaction(df_tickets, "Sistemas")
+
     # suporte
     df_estados_suporte, abertos_mes_atual_suporte, fechados_mes_atual_suporte, \
         total_fechados_suporte, acumulados_suporte = get_by_state(df_tickets, mes_map, date_list, "Suporte ao Usuário")
+    
+    df_leadtime_suporte_bar, df_leadtime_suporte_scatter = get_leadtime(df_tickets, mes_map, "Suporte ao Usuário")
+    df_satisfacao_suporte = get_satisfaction(df_tickets, "Suporte ao Usuário")
 
     # servicos
     df_estados_servicos, abertos_mes_atual_servicos, fechados_mes_atual_servicos, \
         total_fechados_servicos, acumulados_servicos = get_by_state(df_tickets, mes_map, date_list, "Serviços Computacionais")
+
+    df_leadtime_servicos_bar, df_leadtime_servicos_scatter = get_leadtime(df_tickets, mes_map, "Serviços Computacionais")
+    df_satisfacao_servicos = get_satisfaction(df_tickets, "Serviços Computacionais")
     
     # micro
     df_estados_micro, abertos_mes_atual_micro, fechados_mes_atual_micro, \
         total_fechados_micro, acumulados_micro = get_by_state(df_tickets, mes_map, date_list, "Micro Informática")
+    
+    df_leadtime_micro_bar, df_leadtime_micro_scatter = get_leadtime(df_tickets, mes_map, "Micro Informática")
+    df_satisfacao_micro = get_satisfaction(df_tickets, "Micro Informática")
 
     return {'total-fechados': total_fechados,
             'df-satisfacao': df_satisfacao,
@@ -500,6 +669,7 @@ def get_data():
             'acumulados': acumulados,
             'df-leadtime-setores': df_leadtime_setores,
             'df-leadtime-unidades': df_leadtime_unidades,
+            'df-leadtime-scatter': df_leadtime_scatter,
             'df-portal-semana': df_portal_semana,
             'df-telefone-semana': df_telefone_semana,
             'df-horas': df_horas,
@@ -510,6 +680,9 @@ def get_data():
             'abertos-mes-atual-conectividade': abertos_mes_atual_conectividade,
             'fechados-mes-atual-conectividade': fechados_mes_atual_conectividade,
             'acumulados-conectividade': acumulados_conectividade,
+            'df-leadtime-conectividade-bar': df_leadtime_conectividade_bar,
+            'df-leadtime-conectividade-scatter': df_leadtime_conectividade_scatter,
+            'df-satisfacao-conectividade': df_satisfacao_conectividade,
 
             # sistemas
             'total-fechados-sistemas': total_fechados_sistemas,
@@ -517,6 +690,9 @@ def get_data():
             'abertos-mes-atual-sistemas': abertos_mes_atual_sistemas,
             'fechados-mes-atual-sistemas': fechados_mes_atual_sistemas,
             'acumulados-sistemas': acumulados_sistemas,
+            'df-leadtime-sistemas-bar':df_leadtime_sistemas_bar,
+            'df-leadtime-sistemas-scatter':df_leadtime_sistemas_scatter,
+            'df-satisfacao-sistemas': df_satisfacao_sistemas,
 
             # Suporte ao Usuário
             'total-fechados-suporte': total_fechados_suporte,
@@ -524,6 +700,9 @@ def get_data():
             'abertos-mes-atual-suporte': abertos_mes_atual_suporte,
             'fechados-mes-atual-suporte': fechados_mes_atual_suporte,
             'acumulados-suporte': acumulados_sistemas,
+            'df-leadtime-suporte-bar':df_leadtime_suporte_bar,
+            'df-leadtime-suporte-scatter':df_leadtime_suporte_scatter,
+            'df-satisfacao-suporte': df_satisfacao_suporte,
 
             # Serviços Computacionais
             'total-fechados-servicos': total_fechados_servicos,
@@ -531,6 +710,9 @@ def get_data():
             'abertos-mes-atual-servicos': abertos_mes_atual_servicos,
             'fechados-mes-atual-servicos': fechados_mes_atual_servicos,
             'acumulados-servicos': acumulados_servicos,
+            'df-leadtime-servicos-bar':df_leadtime_servicos_bar,
+            'df-leadtime-servicos-scatter':df_leadtime_servicos_scatter,
+            'df-satisfacao-servicos': df_satisfacao_servicos,
 
             # Micro Informática
             'total-fechados-micro': total_fechados_micro,
@@ -538,4 +720,7 @@ def get_data():
             'abertos-mes-atual-micro': abertos_mes_atual_micro,
             'fechados-mes-atual-micro': fechados_mes_atual_micro,
             'acumulados-micro': acumulados_micro,
+            'df-leadtime-micro-bar':df_leadtime_micro_bar,
+            'df-leadtime-micro-scatter':df_leadtime_micro_scatter,
+            'df-satisfacao-micro': df_satisfacao_micro,
             }
