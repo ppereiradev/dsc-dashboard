@@ -40,6 +40,10 @@ python manage.py default_users --username=$DJANGO_CONECTIVIDADE_USERNAME \
     --email=$DJANGO_CONECTIVIDADE_EMAIL \
     --password=$DJANGO_CONECTIVIDADE_PASSWORD
 
+python manage.py default_users --username=$DJANGO_GOVERNANCA_USERNAME \
+    --email=$DJANGO_GOVERNANCA_EMAIL \
+    --password=$DJANGO_GOVERNANCA_PASSWORD
+
 python manage.py collectstatic --noinput
 
 gunicorn dsc_dashboard.wsgi:application --bind 0.0.0.0:8000
