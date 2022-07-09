@@ -24,4 +24,4 @@ class Command(BaseCommand):
                 User.objects.create_user(username=options['username'],
                                           email=options['email'],
                                           password=options['password'])
-                print("User created!!!")
+                print("User created!!!!!")
