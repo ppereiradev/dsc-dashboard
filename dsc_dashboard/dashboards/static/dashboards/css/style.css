@@ -14,11 +14,31 @@ html, body {
 }
 
 
-.django-plotly-dash-app-dsc_dashboard {
+.django-plotly-dash-app-dsc_dashboard, 
+.django-plotly-dash-app-app_1,
+.django-plotly-dash-app-app_3,
+.django-plotly-dash-app-app_4,
+.django-plotly-dash-app-app_5,
+.django-plotly-dash-app-app_6,
+.django-plotly-dash-app-app_7 {
     max-width: 98%;
     margin: 0px auto;
 }
 
+.header_links {
+    font-weight: bold;
+    text-align: right;
+    margin: 10px 60px 20px 0px;
+}
+
+.header_links a {
+    margin: 10px 10px;
+    color: #252422;
+}
+
+.header_links a:hover {
+    color: #ff6353;
+}
 
 .card {
     background-color: white;

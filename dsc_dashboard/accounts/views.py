@@ -21,7 +21,7 @@ import os
 def log_in(request):
 
     if request.user.is_authenticated:
-        return redirect('dashboards:index')
+        return redirect('dashboards:diretoria')
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -32,7 +32,7 @@ def log_in(request):
             if user:  # If the returned object is not None
                 login(request, user)  # we connect the user
                 messages.success(request, "Bem-vindo " + str(user))
-                return redirect('dashboards:index')
+                return redirect('dashboards:diretoria')
             else:  # otherwise an error will be displayed
                 messages.error(request, 'Email ou senha inválida')
     else:

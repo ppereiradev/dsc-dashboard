@@ -13,8 +13,8 @@
         <a id="logout" href="{% url 'accounts:logout' %}" class="btn btn-danger" role="button"> <i class="fas fa-sign-out-alt"></i> SAIR</a>
     </div>
     <div style="clear:both;"></div>
-    <div class="{% plotly_class name='dsc_dashboard' %}">
-        {% plotly_direct name="dsc_dashboard" %}
+    <div class="{% plotly_class name=dashboard_name|default:"app_1" %}">
+        {% plotly_direct name=dashboard_name|default:"app_1" %}
     </div>
 {% endblock content %}
 

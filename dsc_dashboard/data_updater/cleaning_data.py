@@ -603,7 +603,7 @@ def get_satisfaction(df_tickets, sector=None):
 
 
 
-def get_data():
+def get_data(tab="app_1"):
     """
     Return the processed data.
 
@@ -616,52 +616,17 @@ def get_data():
         Dictionary with integers and Pandas DataFrame
         composed of the processed data.
     """
+
     df_tickets, mes_map, date_list = clean_data()
-    df_estados, abertos_mes_atual, fechados_mes_atual, total_fechados, acumulados = get_by_state(df_tickets, mes_map, date_list)
-    df_leadtime_setores, df_leadtime_unidades, df_leadtime_scatter = get_leadtime(df_tickets, mes_map)
-    df_portal_semana, df_telefone_semana = get_by_week(df_tickets)
-    df_horas = get_by_hour(df_tickets)
-    df_satisfacao = get_satisfaction(df_tickets)
 
-    # getting data by sector of STD
+    if tab == "app_1":
+        df_estados, abertos_mes_atual, fechados_mes_atual, total_fechados, acumulados = get_by_state(df_tickets, mes_map, date_list)
+        df_leadtime_setores, df_leadtime_unidades, df_leadtime_scatter = get_leadtime(df_tickets, mes_map)
+        df_portal_semana, df_telefone_semana = get_by_week(df_tickets)
+        df_horas = get_by_hour(df_tickets)
+        df_satisfacao = get_satisfaction(df_tickets)
 
-    # conectividade
-    df_estados_conectividade, abertos_mes_atual_conectividade, fechados_mes_atual_conectividade, \
-        total_fechados_conectividade, acumulados_conectividade = get_by_state(df_tickets, mes_map, date_list, "Conectividade")
-    
-    df_leadtime_conectividade_bar, df_leadtime_conectividade_scatter = get_leadtime(df_tickets, mes_map, "Conectividade")
-    df_satisfacao_conectividade = get_satisfaction(df_tickets, "Conectividade")
-    
-    
-    # sistemas
-    df_estados_sistemas, abertos_mes_atual_sistemas, fechados_mes_atual_sistemas, \
-        total_fechados_sistemas, acumulados_sistemas = get_by_state(df_tickets, mes_map, date_list, "Sistemas")
-
-    df_leadtime_sistemas_bar, df_leadtime_sistemas_scatter = get_leadtime(df_tickets, mes_map, "Sistemas")
-    df_satisfacao_sistemas = get_satisfaction(df_tickets, "Sistemas")
-
-    # suporte
-    df_estados_suporte, abertos_mes_atual_suporte, fechados_mes_atual_suporte, \
-        total_fechados_suporte, acumulados_suporte = get_by_state(df_tickets, mes_map, date_list, "Suporte ao Usuário")
-    
-    df_leadtime_suporte_bar, df_leadtime_suporte_scatter = get_leadtime(df_tickets, mes_map, "Suporte ao Usuário")
-    df_satisfacao_suporte = get_satisfaction(df_tickets, "Suporte ao Usuário")
-
-    # servicos
-    df_estados_servicos, abertos_mes_atual_servicos, fechados_mes_atual_servicos, \
-        total_fechados_servicos, acumulados_servicos = get_by_state(df_tickets, mes_map, date_list, "Serviços Computacionais")
-
-    df_leadtime_servicos_bar, df_leadtime_servicos_scatter = get_leadtime(df_tickets, mes_map, "Serviços Computacionais")
-    df_satisfacao_servicos = get_satisfaction(df_tickets, "Serviços Computacionais")
-    
-    # micro
-    df_estados_micro, abertos_mes_atual_micro, fechados_mes_atual_micro, \
-        total_fechados_micro, acumulados_micro = get_by_state(df_tickets, mes_map, date_list, "Micro Informática")
-    
-    df_leadtime_micro_bar, df_leadtime_micro_scatter = get_leadtime(df_tickets, mes_map, "Micro Informática")
-    df_satisfacao_micro = get_satisfaction(df_tickets, "Micro Informática")
-
-    return {'total-fechados': total_fechados,
+        return {'total-fechados': total_fechados,
             'df-satisfacao': df_satisfacao,
             'df-estados': df_estados,
             'abertos-mes-atual': abertos_mes_atual,
@@ -673,7 +638,19 @@ def get_data():
             'df-portal-semana': df_portal_semana,
             'df-telefone-semana': df_telefone_semana,
             'df-horas': df_horas,
+        }
 
+    # getting data by sector of STD
+
+    elif tab == "app_3":
+    # conectividade
+        df_estados_conectividade, abertos_mes_atual_conectividade, fechados_mes_atual_conectividade, \
+            total_fechados_conectividade, acumulados_conectividade = get_by_state(df_tickets, mes_map, date_list, "Conectividade")
+    
+        df_leadtime_conectividade_bar, df_leadtime_conectividade_scatter = get_leadtime(df_tickets, mes_map, "Conectividade")
+        df_satisfacao_conectividade = get_satisfaction(df_tickets, "Conectividade")
+
+        return {
             # conectividade
             'total-fechados-conectividade': total_fechados_conectividade,
             'df-estados-conectividade': df_estados_conectividade,
@@ -683,7 +660,18 @@ def get_data():
             'df-leadtime-conectividade-bar': df_leadtime_conectividade_bar,
             'df-leadtime-conectividade-scatter': df_leadtime_conectividade_scatter,
             'df-satisfacao-conectividade': df_satisfacao_conectividade,
+        }
+    
 
+    elif tab == "app_4":    
+        # sistemas
+        df_estados_sistemas, abertos_mes_atual_sistemas, fechados_mes_atual_sistemas, \
+            total_fechados_sistemas, acumulados_sistemas = get_by_state(df_tickets, mes_map, date_list, "Sistemas")
+
+        df_leadtime_sistemas_bar, df_leadtime_sistemas_scatter = get_leadtime(df_tickets, mes_map, "Sistemas")
+        df_satisfacao_sistemas = get_satisfaction(df_tickets, "Sistemas")
+
+        return {
             # sistemas
             'total-fechados-sistemas': total_fechados_sistemas,
             'df-estados-sistemas': df_estados_sistemas,
@@ -693,17 +681,17 @@ def get_data():
             'df-leadtime-sistemas-bar':df_leadtime_sistemas_bar,
             'df-leadtime-sistemas-scatter':df_leadtime_sistemas_scatter,
             'df-satisfacao-sistemas': df_satisfacao_sistemas,
+        }
 
-            # Suporte ao Usuário
-            'total-fechados-suporte': total_fechados_suporte,
-            'df-estados-suporte': df_estados_suporte,
-            'abertos-mes-atual-suporte': abertos_mes_atual_suporte,
-            'fechados-mes-atual-suporte': fechados_mes_atual_suporte,
-            'acumulados-suporte': acumulados_sistemas,
-            'df-leadtime-suporte-bar':df_leadtime_suporte_bar,
-            'df-leadtime-suporte-scatter':df_leadtime_suporte_scatter,
-            'df-satisfacao-suporte': df_satisfacao_suporte,
+    elif tab == "app_5":
+        # servicos
+        df_estados_servicos, abertos_mes_atual_servicos, fechados_mes_atual_servicos, \
+            total_fechados_servicos, acumulados_servicos = get_by_state(df_tickets, mes_map, date_list, "Serviços Computacionais")
 
+        df_leadtime_servicos_bar, df_leadtime_servicos_scatter = get_leadtime(df_tickets, mes_map, "Serviços Computacionais")
+        df_satisfacao_servicos = get_satisfaction(df_tickets, "Serviços Computacionais")
+
+        return {
             # Serviços Computacionais
             'total-fechados-servicos': total_fechados_servicos,
             'df-estados-servicos': df_estados_servicos,
@@ -713,7 +701,17 @@ def get_data():
             'df-leadtime-servicos-bar':df_leadtime_servicos_bar,
             'df-leadtime-servicos-scatter':df_leadtime_servicos_scatter,
             'df-satisfacao-servicos': df_satisfacao_servicos,
+        }
+    
+    elif tab == "app_6":
+        # micro
+        df_estados_micro, abertos_mes_atual_micro, fechados_mes_atual_micro, \
+            total_fechados_micro, acumulados_micro = get_by_state(df_tickets, mes_map, date_list, "Micro Informática")
+        
+        df_leadtime_micro_bar, df_leadtime_micro_scatter = get_leadtime(df_tickets, mes_map, "Micro Informática")
+        df_satisfacao_micro = get_satisfaction(df_tickets, "Micro Informática")
 
+        return {
             # Micro Informática
             'total-fechados-micro': total_fechados_micro,
             'df-estados-micro': df_estados_micro,
@@ -723,4 +721,34 @@ def get_data():
             'df-leadtime-micro-bar':df_leadtime_micro_bar,
             'df-leadtime-micro-scatter':df_leadtime_micro_scatter,
             'df-satisfacao-micro': df_satisfacao_micro,
-            }
+        }
+
+    elif tab == "app_7":
+        # suporte
+        df_estados_suporte, abertos_mes_atual_suporte, fechados_mes_atual_suporte, \
+            total_fechados_suporte, acumulados_suporte = get_by_state(df_tickets, mes_map, date_list, "Suporte ao Usuário")
+        
+        df_leadtime_suporte_bar, df_leadtime_suporte_scatter = get_leadtime(df_tickets, mes_map, "Suporte ao Usuário")
+        df_satisfacao_suporte = get_satisfaction(df_tickets, "Suporte ao Usuário")
+
+        df_leadtime_setores, df_leadtime_unidades, df_leadtime_scatter = get_leadtime(df_tickets, mes_map)
+        df_portal_semana, df_telefone_semana = get_by_week(df_tickets)
+
+        df_horas = get_by_hour(df_tickets)
+        df_satisfacao = get_satisfaction(df_tickets)
+
+        return {
+            # Suporte ao Usuário
+            'total-fechados-suporte': total_fechados_suporte,
+            'df-estados-suporte': df_estados_suporte,
+            'abertos-mes-atual-suporte': abertos_mes_atual_suporte,
+            'fechados-mes-atual-suporte': fechados_mes_atual_suporte,
+            'acumulados-suporte': acumulados_suporte,
+            'df-leadtime-suporte-bar':df_leadtime_suporte_bar,
+            'df-leadtime-suporte-scatter':df_leadtime_suporte_scatter,
+            'df-satisfacao-suporte': df_satisfacao_suporte,
+            'df-leadtime-setores': df_leadtime_setores,
+            'df-portal-semana':df_portal_semana,
+            'df-telefone-semana':df_telefone_semana,
+            'df-horas':df_horas,
+        }
