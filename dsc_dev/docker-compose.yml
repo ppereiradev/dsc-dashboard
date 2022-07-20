@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: ./dsc_dev/Dockerfile
+    container_name: dsc_dashboard_app
+    image: dsc_dashboard_app:0.1.0
+    command: >
+      sh -c "python manage.py wait_for_db
+             python manage.py makemigrations
+             python manage.py migrate accounts --noinput
+             python manage.py migrate admin --noinput
+             python manage.py migrate auth --noinput
+             python manage.py migrate contenttypes --noinput
+             python manage.py migrate sessions --noinput
+             python manage.py migrate django_plotly_dash --fake --noinput
+             python manage.py default_users --username=$DJANGO_DIRETORIA_USERNAME \
+             --email=$DJANGO_DIRETORIA_EMAIL --password=$DJANGO_DIRETORIA_PASSWORD
+             python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    volumes:
+      - ../dsc_dashboard:/home/user/app
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    restart: unless-stopped
+    container_name: dsc_dashboard_mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb-data:/data/db
+
+volumes:
+  mongodb-data:
+    driver: local
