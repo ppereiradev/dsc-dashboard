@@ -168,7 +168,7 @@ def charts(data):
         margin=dict(l=0, r=10, t=100, b=0),
     )
 
-    chart_leadtime_scatter.update_traces(marker_size=7)
+    chart_leadtime_scatter.update_traces(marker_size=4)
     chart_leadtime_scatter.update_xaxes(tickformat="%d/%m/%Y")
 
 
@@ -192,7 +192,7 @@ def charts(data):
         margin=dict(l=0, r=10, t=100, b=0),
     )
 
-    
+    chart_leadtime_box.update_traces(marker_size=4)
 
     return {"satisfacao": chart_satisfacao,
             "estados": chart_estados,

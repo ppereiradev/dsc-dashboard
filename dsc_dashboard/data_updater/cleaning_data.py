@@ -337,6 +337,7 @@ def get_leadtime(df_tickets, mes_map, sector=None):
         df_leadtime_scatter['diff'] = df_leadtime_scatter['diff'].astype(int)
 
         df_leadtime_scatter["mes/ano"] = df_leadtime_scatter['close_at'].dt.strftime('%y-%m')
+        df_leadtime_scatter = df_leadtime_scatter.sort_values(by='mes/ano').reset_index(drop=True)
         mes_map = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",  6: "Junho",  7: "Julho",  8: "Agosto",  9: "Setembro",  10: "Outubro", 11: "Novembro",  12: "Dezembro"}
         df_leadtime_scatter["mes/ano"] = df_leadtime_scatter["mes/ano"].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
         
@@ -359,7 +360,7 @@ def get_leadtime(df_tickets, mes_map, sector=None):
         df_leadtime_unidades = df_leadtime_unidades.reset_index(level=[0])
         df_leadtime_setores['mes/ano'] = df_leadtime_setores['mes/ano'].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
         df_leadtime_unidades['mes/ano'] = df_leadtime_unidades['mes/ano'].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
-
+        
         return df_leadtime_setores, df_leadtime_unidades, df_leadtime_scatter
 
     elif sector == "Sistemas":
@@ -380,6 +381,7 @@ def get_leadtime(df_tickets, mes_map, sector=None):
     df_leadtime = df_leadtime.reset_index(drop=True)
     df_leadtime_scatter = df_leadtime.copy()
     df_leadtime_scatter["mes/ano"] = df_leadtime_scatter['close_at'].dt.strftime('%y-%m')
+    df_leadtime_scatter = df_leadtime_scatter.sort_values(by='mes/ano').reset_index(drop=True)
     mes_map = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio",  6: "Junho",  7: "Julho",  8: "Agosto",  9: "Setembro",  10: "Outubro", 11: "Novembro",  12: "Dezembro"}
     df_leadtime_scatter["mes/ano"] = df_leadtime_scatter["mes/ano"].apply(lambda x: mes_map[int(x.split('-')[1])] + '/' + x.split('-')[0])
 
