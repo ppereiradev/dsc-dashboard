@@ -1,9 +1,11 @@
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
 import plotly.graph_objects as go
 import plotly.express as px
+import pandas as pd
 import numpy as np
 
 #from ..app import config_plots
@@ -42,7 +44,7 @@ def charts(data):
         Dictionary of Plotly charts.
     """
     # SATISFAÇÃO
-    df_satisfacao = data['df-satisfacao-micro']
+    df_satisfacao = data['df-satisfacao-suporte']
     media_satisfacao = 0.0
     for i in range(0,len(df_satisfacao.index)):
         media_satisfacao += i * df_satisfacao['qnt'][i]
@@ -77,37 +79,35 @@ def charts(data):
                                 line_width=3,
                                 line_dash="dash",
                                 line_color="#f17e5d",
-                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-micro']) + " | </sup>"
+                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-suporte']) + " | </sup>"
                                                  + "<sup>Respostas: " + str(df_satisfacao['qnt'].sum()) + "</sup><br>"
-                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-micro'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
+                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-suporte'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
                                 annotation_position="top",
                                 annotation_font_color="#f17e5d",
                                 annotation_font_size=20)
 
-    
     # CHAMADOS POR ESTADO
-    df_completo_estados = data['df-estados-micro']
+    df_completo_estados = data['df-estados-suporte']
     
     chart_estados = go.Figure()
     chart_estados.add_trace(go.Bar(
         x=df_completo_estados.index,
         y=df_completo_estados['abertos'],
         name='Abertos',
-        marker_color='#FF6353',
+        marker_color='#FF6353'
     ))
-
     chart_estados.add_trace(go.Bar(
         x=df_completo_estados.index,
         y=df_completo_estados['fechados'],
         name='Fechados',
-        marker_color='lightsalmon',
+        marker_color='lightsalmon'
     ))
 
     chart_estados.add_trace(go.Bar(
         x=df_completo_estados.index,
         y=df_completo_estados['acumulados'],
         name='Acumulados',
-        marker_color='#FEBD11',
+        marker_color='#FEBD11'
     ))
     
     chart_estados.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
@@ -122,16 +122,67 @@ def charts(data):
                                 yaxis_title='Quantidade de Chamados',
                                 )
 
+    # LEADTIME
+    df_leadtime_setores = data['df-leadtime-setores']
 
-    df_leadtime_bar = data['df-leadtime-micro-bar']
+    chart_leadtime_setores = go.Figure()
+    
+    chart_leadtime_setores.add_trace(go.Bar(
+        x=df_leadtime_setores['mes/ano'],
+        y=df_leadtime_setores['Conectividade'],
+        name="CCON",
+        marker_color='#FF6353'
+    ))
+ 
+    chart_leadtime_setores.add_trace(go.Bar(
+        x=df_leadtime_setores['mes/ano'],
+        y=df_leadtime_setores['Micro Informática'],
+        name="CMI",
+        marker_color='lightsalmon'
+    ))
+
+    chart_leadtime_setores.add_trace(go.Bar(
+        x=df_leadtime_setores['mes/ano'],
+        y=df_leadtime_setores['Serviços Computacionais'],
+        name="CSC",
+        marker_color='#FEBD11'
+    ))
+
+    chart_leadtime_setores.add_trace(go.Bar(
+        x=df_leadtime_setores['mes/ano'],
+        y=df_leadtime_setores['Sistemas'],
+        name="CSIS",
+    ))
+
+    chart_leadtime_setores.add_trace(go.Bar(
+        x=df_leadtime_setores['mes/ano'],
+        y=df_leadtime_setores['Suporte ao Usuário'],
+        name="CSUP",
+    ))
+
+
+    chart_leadtime_setores.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    chart_leadtime_setores.update_layout(
+        barmode='group',
+        title="Leadtime por Setor da STD (dias)",
+        xaxis_title="Mês",
+        yaxis_title='Dias',
+        paper_bgcolor='white',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color':'#252422', "family":"Montserrat"},
+        height=350,
+        margin=dict(l=0, r=10, t=100, b=0),   
+    )
+
+    df_leadtime_bar = data['df-leadtime-suporte-bar']
     chart_leadtime_bar = go.Figure()
     
     chart_leadtime_bar.add_trace(go.Bar(
         x=df_leadtime_bar['mes/ano'],
         y=df_leadtime_bar["diff"],
-        marker_color='#FF6353',
+        marker_color='#FF6353'
     ))
-
+ 
     chart_leadtime_bar.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
     chart_leadtime_bar.update_layout(
         barmode='group',
@@ -145,8 +196,89 @@ def charts(data):
         margin=dict(l=0, r=10, t=100, b=0),   
     )
 
+    # QUANTIDADE CHAMADOS ABERTOS DIA DA SEMANA
+    df_portal_semana = data['df-portal-semana']
+    df_telefone_semana = data['df-telefone-semana']
+    chart_qnt_semana = go.Figure()
+    
+    chart_qnt_semana.add_trace(go.Bar(
+        x=df_portal_semana["dia"],
+        y=df_portal_semana["total"],
+        name='Portal',
+        marker_color='#FF6353'
+    ))
 
-    df_leadtime_scatter = data['df-leadtime-micro-scatter']
+    chart_qnt_semana.add_trace(go.Bar(
+        x=df_telefone_semana["dia"],
+        y=df_telefone_semana["total"],
+        name='Telefone',
+        marker_color='lightsalmon'
+    ))
+
+    chart_qnt_semana.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    chart_qnt_semana.update_xaxes(categoryorder='array', categoryarray= ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'])
+    chart_qnt_semana.update_layout(
+        barmode='group',
+        title="Balanço de Chamados Abertos por Dia da Semana<br><sup></sup>"
+              + "<sup>Total dos Últimos 30 dias</sup>",
+        xaxis_title="Dia da Semana",
+        yaxis_title='Quantidade de Chamados',
+        paper_bgcolor='white',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color':'#252422', "family":"Montserrat"},
+        height=350,
+        margin=dict(l=0, r=10, t=100, b=0),   
+    )
+    
+    # QUANTIDADE CHAMADOS ABERTOS HORA DO DIA
+    df_horas = data['df-horas']
+    hours_day = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+                '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
+                '20', '21', '22', '23']
+
+    chart_qnt_hora = go.Figure()
+    
+    chart_qnt_hora.add_trace(go.Bar(
+        x=df_horas["hora"],
+        y=df_horas["qnt_portal"],
+        name='Portal',
+        marker_color='#FF6353'
+    ))
+
+    chart_qnt_hora.add_trace(go.Bar(
+        x=df_horas["hora"],
+        y=df_horas["qnt_telefone"],
+        name='Telefone',
+        marker_color='lightsalmon'
+    ))
+
+    chart_qnt_hora.update_traces(     
+        hovertemplate = "%{x}<br>Qtd.: %{y}"
+    )
+
+    chart_qnt_hora.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+    chart_qnt_hora.update_xaxes(categoryorder='array', categoryarray=hours_day)
+    chart_qnt_hora.update_layout(
+        barmode='group',
+        title="Balanço de Chamados Abertos por Hora<br><sup></sup>"
+              + "<sup>Total dos Últimos 30 dias</sup>",
+        xaxis_title="Hora do Dia",
+        yaxis_title='Quantidade de Chamados',
+        paper_bgcolor='white',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color':'#252422', "family":"Montserrat"},
+        height=350,
+        margin=dict(l=0, r=10, t=100, b=0),
+        xaxis = dict(
+            tickmode = 'array',
+            tickvals = hours_day,
+            ticktext = ['00hr', '01hr', '02hrs', '03hrs', '04hrs', '05hrs', '06hrs', '07hrs', '08hrs', '09hrs',
+                        '10hrs', '11hrs', '12hrs', '13hrs', '14hrs', '15hrs', '16hrs', '17hrs', '18hrs', '19hrs',
+                        '20hrs', '21hrs', '22hrs', '23hrs']
+        )
+    )
+
+    df_leadtime_scatter = data['df-leadtime-suporte-scatter']
     chart_leadtime_scatter = px.scatter(df_leadtime_scatter, x='close_at', y='diff', color="mes/ano", labels={'mes/ano':"Mes/Ano"}, 
                                         hover_data={'close_at':False,
                                                     'diff':False,
@@ -170,37 +302,15 @@ def charts(data):
 
     chart_leadtime_scatter.update_traces(marker_size=4)
     chart_leadtime_scatter.update_xaxes(tickformat="%d/%m/%Y")
-
-
-    chart_leadtime_box = px.box(df_leadtime_scatter, x="mes/ano", y="diff",
-                                hover_data={'close_at':False,
-                                            'diff':False,
-                                            'Aberto':df_leadtime_scatter['created_at'].dt.strftime('%d/%m/%y'),
-                                            'Fechado':df_leadtime_scatter['close_at'].dt.strftime('%d/%m/%y'),
-                                            'Dias':df_leadtime_scatter['diff'],
-                            })
-    chart_leadtime_box.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
-
-    chart_leadtime_box.update_layout(
-        title="Leadtime (dias)",
-        xaxis_title="Data",
-        yaxis_title='Dias',
-        paper_bgcolor='white',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font={'color':'#252422', "family":"Montserrat"},
-        height=350,
-        margin=dict(l=0, r=10, t=100, b=0),
-    )
-
-    chart_leadtime_box.update_traces(marker_size=4)
-
+    
     return {"satisfacao": chart_satisfacao,
             "estados": chart_estados,
+            "leadtime-setores": chart_leadtime_setores,
             "leadtime-bar": chart_leadtime_bar,
+            "abertos-qnt-semana": chart_qnt_semana,
+            "abertos-qnt-hora": chart_qnt_hora,
             "leadtime-scatter": chart_leadtime_scatter,
-            "leadtime-box": chart_leadtime_box,
             }
-
 
 def app_content(charts, data):
     """
@@ -213,7 +323,7 @@ def app_content(charts, data):
     ----------
     charts : dict of {str : plotly.graph_objects and plotly.express}
         Dictionary that contains the charts.
-    data : dict of {str : int or pd.DataFrame}
+    data : dict of {str : int and pd.DataFrame}
         Dictionary that contains integers and pd.DataFrames, but the 
         integer values are used to build summary cards.
 
@@ -227,7 +337,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="far fa-clipboard fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['abertos-mes-atual-micro'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['abertos-mes-atual-suporte'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -237,7 +347,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-check-double fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['fechados-mes-atual-micro'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['fechados-mes-atual-suporte'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -247,11 +357,10 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-archive fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['acumulados-micro'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['acumulados-suporte'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
-
 
     # FIRST CHARTS CONTENT
     chart_satisfacao_dash = [
@@ -262,15 +371,31 @@ def app_content(charts, data):
 
     # SECOND CHARTS CONTENT
     chart_estados_dash = [
-        
                 dcc.Graph(figure=charts["estados"],
                 animate=True, config=config_plots),
     ]
 
-    # THREE CHARTS CONTENT
+    # THIRD CHARTS CONTENT
+    chart_leadtime_setores_dash = [
+                dcc.Graph(figure=charts["leadtime-setores"],
+                animate=True, config=config_plots),
+    ]
+
+    # FOURTH CHARTS CONTENT 
     chart_leadtime_bar_dash = [
-        
                 dcc.Graph(figure=charts["leadtime-bar"],
+                animate=True, config=config_plots),
+    ]
+
+    # FIFTH CHARTS CONTENT
+    chart_semana_dash = [
+                dcc.Graph(figure=charts["abertos-qnt-semana"],
+                animate=True, config=config_plots),
+    ]
+
+    # SIXTH CHARTS CONTENT
+    chart_hora_dash = [
+                dcc.Graph(figure=charts["abertos-qnt-hora"],
                 animate=True, config=config_plots),
     ]
 
@@ -281,16 +406,7 @@ def app_content(charts, data):
                 animate=True, config=config_plots),
     ]
 
-    # FIFTH CHARTS CONTENT
-    chart_leadtime_box_dash = [
-        
-                dcc.Graph(figure=charts["leadtime-box"],
-                animate=True, config=config_plots),
-    ]
-
-
-
-    # ROWS CONTENT 
+    # ROWS CONTENT
     row_1 = html.Div(
         [
             dbc.Row(
@@ -312,6 +428,7 @@ def app_content(charts, data):
                     dbc.Col(dbc.Card(chart_satisfacao_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
                     dbc.Col(dbc.Card(chart_estados_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
                     dbc.Col(dbc.Card(chart_leadtime_bar_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    
                 ],
             ),
         ]
@@ -322,19 +439,21 @@ def app_content(charts, data):
         [
             dbc.Row(
                 [
-                    dbc.Col(dbc.Card(chart_leadtime_scatter_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
-                    dbc.Col(dbc.Card(chart_leadtime_box_dash, className='shadow cards-info'), className='mb-4 col-lg-6 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_leadtime_scatter_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_semana_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    dbc.Col(dbc.Card(chart_hora_dash, className='shadow cards-info'), className='mb-4 col-lg-4 col-md-12 col-sm-12 col-xs-12 col-12'),
                 ],
             ),
         ]
     )
+
 
     return html.Div([html.Div([row_1, row_2, row_3])])
 
 
 def layout(data):
     """
-    Build the html layout of the third tab.
+    Build the html layout of the second tab.
 
     Use :func:`charts` and :func:`app_content` to fill the
     layout of the tab using Dash application components.
@@ -352,7 +471,7 @@ def layout(data):
     """
     return app_content(charts(data), data)
 
-
+data = get_data("app_6")
 def server_layout():
     """
     Build the first layout.
@@ -366,14 +485,13 @@ def server_layout():
     dash_html_components.html
         Html component composed of charts.
     """
-    data = get_data("app_6")
     server_layout = html.Div([html.Div([
             html.A("Diretoria", href='diretoria'),
             html.A("Conectividade", href='conectividade'),
             html.A("Sistemas", href='sistemas'),
             html.A("Serviços Computacionais", href='servicos'),
-            html.A("Micro Informática", href='micro', style={ "color": "#ff6353", "text-decoration": "underline"}),
-            html.A("Suporte ao Usuário", href='suporte'),
+            html.A("Micro Informática", href='micro'),
+            html.A("Suporte ao Usuário", href='suporte', style={ "color": "#ff6353", "text-decoration": "underline"}),
         ], className="header_links"),
         html.Div(layout(data), id="app_6", className='mb-3'),
         dcc.Interval(id='interval-component',interval=10*60*1000, n_intervals=0), #10*60*1000 == minutes*seconds*milliseconds

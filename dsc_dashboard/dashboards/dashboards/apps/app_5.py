@@ -42,7 +42,7 @@ def charts(data):
         Dictionary of Plotly charts.
     """
     # SATISFAÇÃO
-    df_satisfacao = data['df-satisfacao-servicos']
+    df_satisfacao = data['df-satisfacao-micro']
     media_satisfacao = 0.0
     for i in range(0,len(df_satisfacao.index)):
         media_satisfacao += i * df_satisfacao['qnt'][i]
@@ -77,16 +77,16 @@ def charts(data):
                                 line_width=3,
                                 line_dash="dash",
                                 line_color="#f17e5d",
-                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-servicos']) + " | </sup>"
+                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-micro']) + " | </sup>"
                                                  + "<sup>Respostas: " + str(df_satisfacao['qnt'].sum()) + "</sup><br>"
-                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-servicos'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
+                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-micro'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
                                 annotation_position="top",
                                 annotation_font_color="#f17e5d",
                                 annotation_font_size=20)
 
     
     # CHAMADOS POR ESTADO
-    df_completo_estados = data['df-estados-servicos']
+    df_completo_estados = data['df-estados-micro']
     
     chart_estados = go.Figure()
     chart_estados.add_trace(go.Bar(
@@ -123,7 +123,7 @@ def charts(data):
                                 )
 
 
-    df_leadtime_bar = data['df-leadtime-servicos-bar']
+    df_leadtime_bar = data['df-leadtime-micro-bar']
     chart_leadtime_bar = go.Figure()
     
     chart_leadtime_bar.add_trace(go.Bar(
@@ -146,7 +146,7 @@ def charts(data):
     )
 
 
-    df_leadtime_scatter = data['df-leadtime-servicos-scatter']
+    df_leadtime_scatter = data['df-leadtime-micro-scatter']
     chart_leadtime_scatter = px.scatter(df_leadtime_scatter, x='close_at', y='diff', color="mes/ano", labels={'mes/ano':"Mes/Ano"}, 
                                         hover_data={'close_at':False,
                                                     'diff':False,
@@ -227,7 +227,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="far fa-clipboard fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['abertos-mes-atual-servicos'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['abertos-mes-atual-micro'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -237,7 +237,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-check-double fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['fechados-mes-atual-servicos'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['fechados-mes-atual-micro'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -247,7 +247,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-archive fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['acumulados-servicos'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(data['acumulados-micro'],className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -352,7 +352,7 @@ def layout(data):
     """
     return app_content(charts(data), data)
 
-
+data = get_data("app_5")
 def server_layout():
     """
     Build the first layout.
@@ -366,13 +366,12 @@ def server_layout():
     dash_html_components.html
         Html component composed of charts.
     """
-    data = get_data("app_5")
     server_layout = html.Div([html.Div([
             html.A("Diretoria", href='diretoria'),
             html.A("Conectividade", href='conectividade'),
             html.A("Sistemas", href='sistemas'),
-            html.A("Serviços Computacionais", href='servicos', style={ "color": "#ff6353", "text-decoration": "underline"}),
-            html.A("Micro Informática", href='micro'),
+            html.A("Serviços Computacionais", href='servicos'),
+            html.A("Micro Informática", href='micro', style={ "color": "#ff6353", "text-decoration": "underline"}),
             html.A("Suporte ao Usuário", href='suporte'),
         ], className="header_links"),
         html.Div(layout(data), id="app_5", className='mb-3'),

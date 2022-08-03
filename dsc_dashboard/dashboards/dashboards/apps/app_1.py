@@ -443,7 +443,7 @@ def layout(data):
     return app_content(charts(data), data)
 
 
-
+data = get_data("app_1")
 def server_layout():
     """
     Build the first layout.
@@ -457,7 +457,6 @@ def server_layout():
     dash_html_components.html
         Html component composed of charts.
     """
-    data = get_data("app_1")
     server_layout = html.Div([html.Div([
             html.A("Diretoria", href='diretoria', style={ "color": "#ff6353", "text-decoration": "underline"}),
             html.A("Conectividade", href='conectividade'),

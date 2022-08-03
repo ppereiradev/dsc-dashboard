@@ -83,7 +83,7 @@ def save_data_tickets(df):
     print('Finalizado atualização do MongoDB...')
 
 
-def get_many_tickets(query=None):
+def get_tickets_from_db(query=None):
     """
     Get data from MongoDB.
 
