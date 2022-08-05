@@ -14,7 +14,7 @@ from django_plotly_dash import DjangoDash
 
 #pio.templates.default = "ggplot2"
 
-from data_updater.data_cleaning import ProcessedData
+from data_updater.data_processing.processed_data import ProcessedData
 from dash.dependencies import Input, Output
 
 EXTERNAL_SCRIPTS = ["https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.49.5/plotly-locale-pt-br.js"]

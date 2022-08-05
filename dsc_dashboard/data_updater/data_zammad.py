@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 from .mongo_utils import save_data_tickets
-from .data_cleaning import ProcessedData
+from .data_processing.processed_data import ProcessedData
 
 processed_data = ProcessedData()
 

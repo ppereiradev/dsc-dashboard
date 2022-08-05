@@ -47,4 +47,7 @@ class Command(BaseCommand):
                 time.sleep(1)
             tries += 1
 
-        self.stdout.write(self.style.SUCCESS('Database available!'))
+        if tries < 10:
+            self.stdout.write(self.style.SUCCESS('Database available!'))
+        else:
+            self.stdout.write('Database is not available, try again!')

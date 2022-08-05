@@ -1,9 +1,6 @@
 import pandas as pd
-import numpy as np
-import pymongo
 from pymongo import MongoClient
 import os
-from datetime import datetime
 
 def db_connection():
     """
