@@ -14,7 +14,7 @@ from django_plotly_dash import DjangoDash
 
 #pio.templates.default = "ggplot2"
 
-from data_updater.data_cleaning import get_data
+from data_updater.data_cleaning import ProcessedData
 from dash.dependencies import Input, Output
 
 EXTERNAL_SCRIPTS = ["https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.49.5/plotly-locale-pt-br.js"]
@@ -23,7 +23,7 @@ app = DjangoDash('app_3', suppress_callback_exceptions=True, external_stylesheet
 #server = app.server
 config_plots = dict(locale='pt-br')
 
-def charts(data):
+def charts(sistemas):
     """
     Build the charts.
 
@@ -42,7 +42,7 @@ def charts(data):
         Dictionary of Plotly charts.
     """
     # SATISFAÇÃO
-    df_satisfacao = data['df-satisfacao-sistemas']
+    df_satisfacao = sistemas.satisfaction_customers
     media_satisfacao = 0.0
     for i in range(0,len(df_satisfacao.index)):
         media_satisfacao += i * df_satisfacao['qnt'][i]
@@ -77,16 +77,16 @@ def charts(data):
                                 line_width=3,
                                 line_dash="dash",
                                 line_color="#f17e5d",
-                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-sistemas']) + " | </sup>"
+                                annotation_text= "<sup>Fechados: " + str(sistemas.closed_tickets_total) + " | </sup>"
                                                  + "<sup>Respostas: " + str(df_satisfacao['qnt'].sum()) + "</sup><br>"
-                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-sistemas'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
+                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/sistemas.closed_tickets_total)*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
                                 annotation_position="top",
                                 annotation_font_color="#f17e5d",
                                 annotation_font_size=20)
 
     
     # CHAMADOS POR ESTADO
-    df_completo_estados = data['df-estados-sistemas']
+    df_completo_estados = sistemas.num_tickets_by_state
     
     chart_estados = go.Figure()
     chart_estados.add_trace(go.Bar(
@@ -123,7 +123,7 @@ def charts(data):
                                 )
 
 
-    df_leadtime_bar = data['df-leadtime-sistemas-bar']
+    df_leadtime_bar = sistemas.leadtime_bar_plot
     chart_leadtime_bar = go.Figure()
     
     chart_leadtime_bar.add_trace(go.Bar(
@@ -146,7 +146,7 @@ def charts(data):
     )
 
 
-    df_leadtime_scatter = data['df-leadtime-sistemas-scatter']
+    df_leadtime_scatter = sistemas.leadtime_scatter_plot
     chart_leadtime_scatter = px.scatter(df_leadtime_scatter, x='close_at', y='diff', color="mes/ano", labels={'mes/ano':"Mes/Ano"}, 
                                         hover_data={'close_at':False,
                                                     'diff':False,
@@ -202,7 +202,7 @@ def charts(data):
             }
 
 
-def app_content(charts, data):
+def app_content(charts, sistemas):
     """
     Build the html components.
 
@@ -227,7 +227,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="far fa-clipboard fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['abertos-mes-atual-sistemas'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(sistemas.open_tickets_current_month,className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -237,7 +237,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-check-double fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['fechados-mes-atual-sistemas'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(sistemas.closed_tickets_current_month,className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -247,7 +247,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-archive fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['acumulados-sistemas'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(sistemas.num_accumulated_tickets,className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -332,7 +332,7 @@ def app_content(charts, data):
     return html.Div([html.Div([row_1, row_2, row_3])])
 
 
-def layout(data):
+def layout(sistemas):
     """
     Build the html layout of the third tab.
 
@@ -350,9 +350,10 @@ def layout(data):
     dash_html_components.html
         Html component composed of charts.
     """
-    return app_content(charts(data), data)
+    return app_content(charts(sistemas), sistemas)
 
-data = get_data("app_3")
+processed_data = ProcessedData()
+sistemas = processed_data.get_data_sistemas()
 def server_layout():
     """
     Build the first layout.
@@ -374,7 +375,7 @@ def server_layout():
             html.A("Micro Informática", href='micro'),
             html.A("Suporte ao Usuário", href='suporte'),
         ], className="header_links"),
-        html.Div(layout(data), id="app_3", className='mb-3'),
+        html.Div(layout(sistemas), id="app_3", className='mb-3'),
         dcc.Interval(id='interval-component',interval=10*60*1000, n_intervals=0), #10*60*1000 == minutes*seconds*milliseconds
         ])
     return server_layout
@@ -399,8 +400,8 @@ def update_metrics(n_intervals):
     list of dbc.Tabs
         Return a list of dbc.Tabs components to insert on html.Div.
     """
-    data = get_data("app_3")
-    return layout(data)
+    sistemas = processed_data.get_data_sistemas()
+    return layout(sistemas)
 
 
 app.layout = server_layout

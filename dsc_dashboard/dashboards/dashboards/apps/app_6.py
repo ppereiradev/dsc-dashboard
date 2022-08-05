@@ -16,7 +16,7 @@ from django_plotly_dash import DjangoDash
 
 #pio.templates.default = "ggplot2"
 
-from data_updater.data_cleaning import get_data
+from data_updater.data_cleaning import ProcessedData
 from dash.dependencies import Input, Output
 
 EXTERNAL_SCRIPTS = ["https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.49.5/plotly-locale-pt-br.js"]
@@ -25,7 +25,7 @@ app = DjangoDash('app_6', suppress_callback_exceptions=True, external_stylesheet
 #server = app.server
 config_plots = dict(locale='pt-br')
 
-def charts(data):
+def charts(suporte):
     """
     Build the charts.
 
@@ -44,7 +44,7 @@ def charts(data):
         Dictionary of Plotly charts.
     """
     # SATISFAÇÃO
-    df_satisfacao = data['df-satisfacao-suporte']
+    df_satisfacao = suporte.satisfaction_customers
     media_satisfacao = 0.0
     for i in range(0,len(df_satisfacao.index)):
         media_satisfacao += i * df_satisfacao['qnt'][i]
@@ -79,15 +79,15 @@ def charts(data):
                                 line_width=3,
                                 line_dash="dash",
                                 line_color="#f17e5d",
-                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-suporte']) + " | </sup>"
+                                annotation_text= "<sup>Fechados: " + str(suporte.closed_tickets_total) + " | </sup>"
                                                  + "<sup>Respostas: " + str(df_satisfacao['qnt'].sum()) + "</sup><br>"
-                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-suporte'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
+                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/suporte.closed_tickets_total)*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
                                 annotation_position="top",
                                 annotation_font_color="#f17e5d",
                                 annotation_font_size=20)
 
     # CHAMADOS POR ESTADO
-    df_completo_estados = data['df-estados-suporte']
+    df_completo_estados = suporte.num_tickets_by_state
     
     chart_estados = go.Figure()
     chart_estados.add_trace(go.Bar(
@@ -122,59 +122,8 @@ def charts(data):
                                 yaxis_title='Quantidade de Chamados',
                                 )
 
-    # LEADTIME
-    df_leadtime_setores = data['df-leadtime-setores']
 
-    chart_leadtime_setores = go.Figure()
-    
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Conectividade'],
-        name="CCON",
-        marker_color='#FF6353'
-    ))
- 
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Micro Informática'],
-        name="CMI",
-        marker_color='lightsalmon'
-    ))
-
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Serviços Computacionais'],
-        name="CSC",
-        marker_color='#FEBD11'
-    ))
-
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Sistemas'],
-        name="CSIS",
-    ))
-
-    chart_leadtime_setores.add_trace(go.Bar(
-        x=df_leadtime_setores['mes/ano'],
-        y=df_leadtime_setores['Suporte ao Usuário'],
-        name="CSUP",
-    ))
-
-
-    chart_leadtime_setores.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
-    chart_leadtime_setores.update_layout(
-        barmode='group',
-        title="Leadtime por Setor da STD (dias)",
-        xaxis_title="Mês",
-        yaxis_title='Dias',
-        paper_bgcolor='white',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font={'color':'#252422', "family":"Montserrat"},
-        height=350,
-        margin=dict(l=0, r=10, t=100, b=0),   
-    )
-
-    df_leadtime_bar = data['df-leadtime-suporte-bar']
+    df_leadtime_bar = suporte.leadtime_bar_plot
     chart_leadtime_bar = go.Figure()
     
     chart_leadtime_bar.add_trace(go.Bar(
@@ -197,8 +146,8 @@ def charts(data):
     )
 
     # QUANTIDADE CHAMADOS ABERTOS DIA DA SEMANA
-    df_portal_semana = data['df-portal-semana']
-    df_telefone_semana = data['df-telefone-semana']
+    df_portal_semana = suporte.portal_tickets_week
+    df_telefone_semana = suporte.phone_tickets_week
     chart_qnt_semana = go.Figure()
     
     chart_qnt_semana.add_trace(go.Bar(
@@ -231,7 +180,7 @@ def charts(data):
     )
     
     # QUANTIDADE CHAMADOS ABERTOS HORA DO DIA
-    df_horas = data['df-horas']
+    df_horas = suporte.tickets_by_hour
     hours_day = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
                 '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
                 '20', '21', '22', '23']
@@ -278,7 +227,7 @@ def charts(data):
         )
     )
 
-    df_leadtime_scatter = data['df-leadtime-suporte-scatter']
+    df_leadtime_scatter = suporte.leadtime_scatter_plot
     chart_leadtime_scatter = px.scatter(df_leadtime_scatter, x='close_at', y='diff', color="mes/ano", labels={'mes/ano':"Mes/Ano"}, 
                                         hover_data={'close_at':False,
                                                     'diff':False,
@@ -305,14 +254,13 @@ def charts(data):
     
     return {"satisfacao": chart_satisfacao,
             "estados": chart_estados,
-            "leadtime-setores": chart_leadtime_setores,
             "leadtime-bar": chart_leadtime_bar,
             "abertos-qnt-semana": chart_qnt_semana,
             "abertos-qnt-hora": chart_qnt_hora,
             "leadtime-scatter": chart_leadtime_scatter,
             }
 
-def app_content(charts, data):
+def app_content(charts, suporte):
     """
     Build the html components.
 
@@ -337,7 +285,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="far fa-clipboard fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['abertos-mes-atual-suporte'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(suporte.open_tickets_current_month,className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -347,7 +295,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-check-double fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['fechados-mes-atual-suporte'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(suporte.closed_tickets_current_month,className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -357,7 +305,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-archive fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['acumulados-suporte'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(suporte.num_accumulated_tickets,className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -372,12 +320,6 @@ def app_content(charts, data):
     # SECOND CHARTS CONTENT
     chart_estados_dash = [
                 dcc.Graph(figure=charts["estados"],
-                animate=True, config=config_plots),
-    ]
-
-    # THIRD CHARTS CONTENT
-    chart_leadtime_setores_dash = [
-                dcc.Graph(figure=charts["leadtime-setores"],
                 animate=True, config=config_plots),
     ]
 
@@ -451,7 +393,7 @@ def app_content(charts, data):
     return html.Div([html.Div([row_1, row_2, row_3])])
 
 
-def layout(data):
+def layout(suporte):
     """
     Build the html layout of the second tab.
 
@@ -469,9 +411,10 @@ def layout(data):
     dash_html_components.html
         Html component composed of charts.
     """
-    return app_content(charts(data), data)
+    return app_content(charts(suporte), suporte)
 
-data = get_data("app_6")
+processed_data = ProcessedData()
+suporte = processed_data.get_data_suporte()
 def server_layout():
     """
     Build the first layout.
@@ -493,7 +436,7 @@ def server_layout():
             html.A("Micro Informática", href='micro'),
             html.A("Suporte ao Usuário", href='suporte', style={ "color": "#ff6353", "text-decoration": "underline"}),
         ], className="header_links"),
-        html.Div(layout(data), id="app_6", className='mb-3'),
+        html.Div(layout(suporte), id="app_6", className='mb-3'),
         dcc.Interval(id='interval-component',interval=10*60*1000, n_intervals=0), #10*60*1000 == minutes*seconds*milliseconds
         ])
     return server_layout
@@ -518,8 +461,8 @@ def update_metrics(n_intervals):
     list of dbc.Tabs
         Return a list of dbc.Tabs components to insert on html.Div.
     """
-    data = get_data("app_6")
-    return layout(data)
+    suporte = processed_data.get_data_suporte()
+    return layout(suporte)
 
 
 app.layout = server_layout

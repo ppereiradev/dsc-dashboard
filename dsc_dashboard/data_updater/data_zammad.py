@@ -6,6 +6,9 @@ import os
 from datetime import datetime
 
 from .mongo_utils import save_data_tickets
+from .data_cleaning import ProcessedData
+
+processed_data = ProcessedData()
 
 def all_tickets():
     """
@@ -65,6 +68,7 @@ def all_tickets():
             df.at[i, 'updated_at'] = "null"
 
     save_data_tickets(df)
+    processed_data.get_processed_data_all()
 
 
 def interval_tickets(dias=120):
@@ -157,3 +161,5 @@ def interval_tickets(dias=120):
     print('END FETCHING TICKET DATA FROM ZAMMAD...')
     if not df.empty:
         save_data_tickets(df)
+
+    processed_data.get_processed_data_all()

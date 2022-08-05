@@ -14,7 +14,7 @@ from django_plotly_dash import DjangoDash
 
 #pio.templates.default = "ggplot2"
 
-from data_updater.data_cleaning import get_data
+from data_updater.data_cleaning import ProcessedData
 from dash.dependencies import Input, Output
 
 EXTERNAL_SCRIPTS = ["https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.49.5/plotly-locale-pt-br.js"]
@@ -23,7 +23,7 @@ app = DjangoDash('app_5', suppress_callback_exceptions=True, external_stylesheet
 #server = app.server
 config_plots = dict(locale='pt-br')
 
-def charts(data):
+def charts(micro_informatica):
     """
     Build the charts.
 
@@ -42,7 +42,7 @@ def charts(data):
         Dictionary of Plotly charts.
     """
     # SATISFAÇÃO
-    df_satisfacao = data['df-satisfacao-micro']
+    df_satisfacao = micro_informatica.satisfaction_customers
     media_satisfacao = 0.0
     for i in range(0,len(df_satisfacao.index)):
         media_satisfacao += i * df_satisfacao['qnt'][i]
@@ -77,16 +77,16 @@ def charts(data):
                                 line_width=3,
                                 line_dash="dash",
                                 line_color="#f17e5d",
-                                annotation_text= "<sup>Fechados: " + str(data['total-fechados-micro']) + " | </sup>"
+                                annotation_text= "<sup>Fechados: " + str(micro_informatica.closed_tickets_total) + " | </sup>"
                                                  + "<sup>Respostas: " + str(df_satisfacao['qnt'].sum()) + "</sup><br>"
-                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/data['total-fechados-micro'])*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
+                                                 + "<sup>Percentual: " + f"{(df_satisfacao['qnt'].sum()/micro_informatica.closed_tickets_total)*100:.2f}%" + "</sup><br>"+ f"Média: {media_satisfacao:.2f}",
                                 annotation_position="top",
                                 annotation_font_color="#f17e5d",
                                 annotation_font_size=20)
 
     
     # CHAMADOS POR ESTADO
-    df_completo_estados = data['df-estados-micro']
+    df_completo_estados = micro_informatica.num_tickets_by_state
     
     chart_estados = go.Figure()
     chart_estados.add_trace(go.Bar(
@@ -123,7 +123,7 @@ def charts(data):
                                 )
 
 
-    df_leadtime_bar = data['df-leadtime-micro-bar']
+    df_leadtime_bar = micro_informatica.leadtime_bar_plot
     chart_leadtime_bar = go.Figure()
     
     chart_leadtime_bar.add_trace(go.Bar(
@@ -146,7 +146,7 @@ def charts(data):
     )
 
 
-    df_leadtime_scatter = data['df-leadtime-micro-scatter']
+    df_leadtime_scatter = micro_informatica.leadtime_scatter_plot
     chart_leadtime_scatter = px.scatter(df_leadtime_scatter, x='close_at', y='diff', color="mes/ano", labels={'mes/ano':"Mes/Ano"}, 
                                         hover_data={'close_at':False,
                                                     'diff':False,
@@ -202,7 +202,7 @@ def charts(data):
             }
 
 
-def app_content(charts, data):
+def app_content(charts, micro_informatica):
     """
     Build the html components.
 
@@ -227,7 +227,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="far fa-clipboard fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['abertos-mes-atual-micro'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(micro_informatica.open_tickets_current_month,className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -237,7 +237,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-check-double fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['fechados-mes-atual-micro'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(micro_informatica.closed_tickets_current_month,className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -247,7 +247,7 @@ def app_content(charts, data):
         dbc.CardBody(
             [
                 html.Div(html.I(className="fas fa-archive fa-2x"), className='div-icon-card-body'),
-                html.Div(html.P(data['acumulados-micro'],className="card-text cards-content-info-body"), className='div-content-card-body'),
+                html.Div(html.P(micro_informatica.num_accumulated_tickets,className="card-text cards-content-info-body"), className='div-content-card-body'),
             ],
             className="cards-info-body"),
     ]
@@ -332,7 +332,7 @@ def app_content(charts, data):
     return html.Div([html.Div([row_1, row_2, row_3])])
 
 
-def layout(data):
+def layout(micro_informatica):
     """
     Build the html layout of the third tab.
 
@@ -350,9 +350,10 @@ def layout(data):
     dash_html_components.html
         Html component composed of charts.
     """
-    return app_content(charts(data), data)
+    return app_content(charts(micro_informatica), micro_informatica)
 
-data = get_data("app_5")
+processed_data = ProcessedData()
+micro_informatica = processed_data.get_data_micro_informatica()
 def server_layout():
     """
     Build the first layout.
@@ -374,7 +375,7 @@ def server_layout():
             html.A("Micro Informática", href='micro', style={ "color": "#ff6353", "text-decoration": "underline"}),
             html.A("Suporte ao Usuário", href='suporte'),
         ], className="header_links"),
-        html.Div(layout(data), id="app_5", className='mb-3'),
+        html.Div(layout(micro_informatica), id="app_5", className='mb-3'),
         dcc.Interval(id='interval-component',interval=10*60*1000, n_intervals=0), #10*60*1000 == minutes*seconds*milliseconds
         ])
     return server_layout
@@ -399,8 +400,8 @@ def update_metrics(n_intervals):
     list of dbc.Tabs
         Return a list of dbc.Tabs components to insert on html.Div.
     """
-    data = get_data("app_5")
-    return layout(data)
+    micro_informatica = processed_data.get_data_micro_informatica()
+    return layout(micro_informatica)
 
 
 app.layout = server_layout
