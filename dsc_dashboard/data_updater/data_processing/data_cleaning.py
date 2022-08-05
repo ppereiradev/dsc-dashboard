@@ -184,7 +184,7 @@ class DataCleaning:
             information.
         """
         satisfaction_customers_aux = self.tickets.copy(deep=True)
-
+        
         url = f"https://docs.google.com/spreadsheets/d/{os.getenv('GOOGLE_SHEET_ID')}/gviz/tq?tqx=out:csv&sheet={os.getenv('GOOGLE_SHEET_NAME')}"
         tickets_aux = pd.read_csv(url)
         score_column = tickets_aux.columns[1]
@@ -192,12 +192,11 @@ class DataCleaning:
         tickets_aux = tickets_aux.drop_duplicates(subset=ticket_number_column, keep="last")
         self.satisfaction_customers = pd.DataFrame(None, index =[0,1,2,3,4,5,6,7,8,9,10], columns =['qnt'])
 
-        satisfaction_customers_aux['number'], tickets_aux[ticket_number_column] = satisfaction_customers_aux['number'].astype(int), tickets_aux[ticket_number_column].astype(int)
+        satisfaction_customers_aux['number'], tickets_aux[ticket_number_column] = satisfaction_customers_aux['number'].astype(str), tickets_aux[ticket_number_column].astype(str)
         satisfaction_customers_aux = pd.merge(satisfaction_customers_aux, tickets_aux, left_on='number', right_on=ticket_number_column,how='inner')
         
-        self.satisfaction_customers['qnt'] = self.satisfaction_customers.index.map(tickets_aux[score_column].value_counts()).fillna(0).astype(int)
-        self.satisfaction_customers['percentage'] = self.satisfaction_customers.index.map(tickets_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
-
+        self.satisfaction_customers['qnt'] = self.satisfaction_customers.index.map(satisfaction_customers_aux[score_column].value_counts()).fillna(0).astype(int)
+        self.satisfaction_customers['percentage'] = self.satisfaction_customers.index.map(satisfaction_customers_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
 
     def get_processed_data(self):
         self.get_data_from_last_four_months()

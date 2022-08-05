@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from datetime import datetime, timedelta
 
@@ -97,3 +98,15 @@ class Diretoria(DataCleaning):
         self.leadtime_campi = self.leadtime_campi.reset_index(level=[0])
         self.leadtime_std_sectors['mes/ano'] = self.leadtime_std_sectors['mes/ano'].apply(lambda x: MONTH_NUMBER_TO_NAME[int(x.split('-')[1])] + '/' + x.split('-')[0])
         self.leadtime_campi['mes/ano'] = self.leadtime_campi['mes/ano'].apply(lambda x: MONTH_NUMBER_TO_NAME[int(x.split('-')[1])] + '/' + x.split('-')[0])
+
+    def get_satisfaction(self):
+        
+        url = f"https://docs.google.com/spreadsheets/d/{os.getenv('GOOGLE_SHEET_ID')}/gviz/tq?tqx=out:csv&sheet={os.getenv('GOOGLE_SHEET_NAME')}"
+        tickets_aux = pd.read_csv(url)
+        score_column = tickets_aux.columns[1]
+        ticket_number_column = tickets_aux.columns[-1]
+        tickets_aux = tickets_aux.drop_duplicates(subset=ticket_number_column, keep="last")
+        self.satisfaction_customers = pd.DataFrame(None, index =[0,1,2,3,4,5,6,7,8,9,10], columns =['qnt'])
+        
+        self.satisfaction_customers['qnt'] = self.satisfaction_customers.index.map(tickets_aux[score_column].value_counts()).fillna(0).astype(int)
+        self.satisfaction_customers['percentage'] = self.satisfaction_customers.index.map(tickets_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
