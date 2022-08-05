@@ -41,7 +41,7 @@ def save_data_tickets(df):
     # verify if the tickets is already on database
     df = df[df['number'].notna()]
     numbers = df['number'].tolist()
-    df_banco = get_many_tickets({"number": {"$in": numbers}})
+    df_banco = get_tickets_from_db({"number": {"$in": numbers}})
 
     # if database is empty, then it saves the data
     if df_banco.empty:

@@ -1,7 +1,7 @@
-cleaning_data
+data_cleaning
 =============
 
-.. automodule:: dsc_dashboard.data_updater.cleaning_data
+.. automodule:: dsc_dashboard.data_updater.data_cleaning
     :members:
 
 .. toctree::

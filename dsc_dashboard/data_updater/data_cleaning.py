@@ -38,6 +38,7 @@ ZAMMAD_GROUPS_TO_STD_SECTORS = {
     "UAEADTec": "UAEADTec"
 }
 
+
 # functions
 def get_data_from_last_four_months():
     """
@@ -207,14 +208,14 @@ def get_by_state(tickets, sector="Diretoria"):
     for i in range(1, len(dates_three_months_ago_from_today)):
         accumulated_tickets.iloc[i, 0] += accumulated_tickets.iloc[i - 1, 0] - closed_tickets.iloc[i, 0]
 
-    accumulated = accumulated_tickets['qnt'][-1]
+    num_accumulated_tickets = accumulated_tickets['qnt'][-1]
 
     # COMPLETE DATAFRAME
     num_tickets_by_state = pd.merge(open_tickets,closed_tickets, on='mes/ano',how='inner')
     num_tickets_by_state = pd.merge(num_tickets_by_state,accumulated_tickets, on='mes/ano',how='inner')
     num_tickets_by_state.columns = ['abertos', 'fechados', 'acumulados']    
 
-    return num_tickets_by_state, open_tickets_current_month, closed_tickets_current_month, closed_tickets_total, accumulated
+    return num_tickets_by_state, open_tickets_current_month, closed_tickets_current_month, closed_tickets_total, num_accumulated_tickets
 
 def get_leadtime(tickets, sector=None):
     """
@@ -245,7 +246,6 @@ def get_leadtime(tickets, sector=None):
     
     # keeping tickets from last 6 months only
     tickets = tickets[tickets['close_at'] > (datetime.now() - timedelta(days=210))]
-    #tickets = tickets[tickets['created_at'] > datetime(2021, 8, 1, 0, 0, 0, 0)]
 
     tickets['diff'] = tickets['close_at'] - tickets['created_at']
     tickets['diff'] = tickets['diff'].astype('timedelta64[h]')
@@ -327,14 +327,6 @@ def get_leadtime(tickets, sector=None):
     
     return tickets, tickets_scatter
 
-
-    # checking if the ticket was closed at the same month that it was created (0 or 1)
-    #tickets['flag'] = (tickets['close_at'].dt.month == tickets['created_at'].dt.month).astype(int)
-    
-    # removing tickets that were not created in the same month that they were closed
-    #tickets = tickets[tickets['flag'] == 1]
-    
-    
 
 def get_by_week(tickets):
     """
@@ -505,7 +497,7 @@ def get_satisfaction(tickets, sector=None):
         
         tickets_satisfacao['qnt'] = tickets_satisfacao.index.map(tickets_satisfacao_aux[score_column].value_counts()).fillna(0).astype(int)
         tickets_satisfacao['percentage'] = tickets_satisfacao.index.map(tickets_satisfacao_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
-
+    
     return tickets_satisfacao
 
 
