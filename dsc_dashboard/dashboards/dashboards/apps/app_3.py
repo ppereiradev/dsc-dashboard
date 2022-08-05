@@ -6,22 +6,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
 
-#from ..app import config_plots
-
-import plotly.io as pio
-import dash_bootstrap_components as dbc
-from django_plotly_dash import DjangoDash
-
-#pio.templates.default = "ggplot2"
-
-from data_updater.data_processing.processed_data import ProcessedData
-from dash.dependencies import Input, Output
-
-EXTERNAL_SCRIPTS = ["https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.49.5/plotly-locale-pt-br.js"]
-FONT_AWESOME = "https://use.fontawesome.com/releases/v5.7.2/css/all.css"
-app = DjangoDash('app_3', suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.UNITED, FONT_AWESOME],  external_scripts=EXTERNAL_SCRIPTS)
-#server = app.server
-config_plots = dict(locale='pt-br')
+from ..app import config_plots
 
 def charts(sistemas):
     """
@@ -351,57 +336,3 @@ def layout(sistemas):
         Html component composed of charts.
     """
     return app_content(charts(sistemas), sistemas)
-
-processed_data = ProcessedData()
-sistemas = processed_data.get_data_sistemas()
-def server_layout():
-    """
-    Build the first layout.
-
-    Call :func:`get_data` to compute the input values 
-    of the charts, then it build the layout of the 
-    Dash application when it loads for the first time.
-
-    Returns
-    -------
-    dash_html_components.html
-        Html component composed of charts.
-    """
-    server_layout = html.Div([html.Div([
-            html.A("Diretoria", href='diretoria'),
-            html.A("Conectividade", href='conectividade'),
-            html.A("Sistemas", href='sistemas', style={ "color": "#ff6353", "text-decoration": "underline"}),
-            html.A("Serviços Computacionais", href='servicos'),
-            html.A("Micro Informática", href='micro'),
-            html.A("Suporte ao Usuário", href='suporte'),
-        ], className="header_links"),
-        html.Div(layout(sistemas), id="app_3", className='mb-3'),
-        dcc.Interval(id='interval-component',interval=10*60*1000, n_intervals=0), #10*60*1000 == minutes*seconds*milliseconds
-        ])
-    return server_layout
-
-@app.callback(Output('app_3', 'children'),[Input('interval-component', 'n_intervals')])
-def update_metrics(n_intervals):
-    """
-    Build the updated layout.
-
-    Be a callback function triggered by the ``dcc.Interval`` component,
-    then call :func:`get_data` to compute the input values of the 
-    charts, and build the updated layout of the Dash application.
-
-    Parameters
-    ----------
-    n_intervals : int
-        Value that represents how many updates have been happend
-        already, it is not used.
-
-    Returns
-    -------
-    list of dbc.Tabs
-        Return a list of dbc.Tabs components to insert on html.Div.
-    """
-    sistemas = processed_data.get_data_sistemas()
-    return layout(sistemas)
-
-
-app.layout = server_layout
