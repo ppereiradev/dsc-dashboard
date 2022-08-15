@@ -8,9 +8,37 @@ from .data_cleaning import DataCleaning
 
        
 class Sistemas(DataCleaning):
-    def clean_data(self):
-        super().clean_data()
-        self.tickets = self.tickets[self.tickets['group'] == "Sistemas"]
+
+    def clean_data(self, group=None):
+        if group:
+            # substituing null values for None
+            self.tickets['created_at'] = self.tickets['created_at'].map(lambda x: x if x != "null" else None)
+            self.tickets['close_at'] = self.tickets['close_at'].map(lambda x: x if x != "null" else None)
+            self.tickets['updated_at'] = self.tickets['updated_at'].map(lambda x: x if x != "null" else None)
+            
+            # converting into pandas date format 
+            # and adding an offset to the hour 
+            # in order to meet brazilian time
+            self.tickets['created_at'] = pd.to_datetime(self.tickets['created_at']) + pd.DateOffset(hours=-3)
+            self.tickets['close_at'] = pd.to_datetime(self.tickets['close_at']) + pd.DateOffset(hours=-3)
+            self.tickets['updated_at'] = pd.to_datetime(self.tickets['updated_at']) + pd.DateOffset(hours=-3)
+
+            ticket_states_to_portuguese = {
+                "closed":"Fechado",
+                "open":"Aberto",
+                "resolvido":"Resolvido",
+                "new":"Novo",
+                "aguardando resposta":"Aguardando Resposta",
+                "pendente":"Pendente",
+                "retorno":"Retorno",
+            }
+
+            self.tickets['state'] = self.tickets['state'].map(ticket_states_to_portuguese)
+            self.tickets = self.tickets[self.tickets['group'] == group]
+
+        else:
+            super().clean_data()
+            self.tickets = self.tickets[self.tickets['group'] == "Sistemas"]
 
     def get_by_state(self):
         
@@ -42,3 +70,10 @@ class Sistemas(DataCleaning):
 
 
         super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous)
+
+    def get_processed_data(self, group=None):
+        self.get_data_from_last_four_months()
+        self.clean_data(group)
+        self.get_by_state()
+        self.get_leadtime()
+        self.get_satisfaction()

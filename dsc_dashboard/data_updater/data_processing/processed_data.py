@@ -36,7 +36,11 @@ class ProcessedData(metaclass=Singleton):
     def get_data_conectividade(self):
         return self.conectividade
     
-    def get_data_sistemas(self):
+    def get_data_sistemas(self, group=None):
+        if group:
+            self.sistemas.get_processed_data(group)
+        else:
+            self.sistemas.get_processed_data()
         return self.sistemas
 
     def get_data_servicos_computacionais(self):

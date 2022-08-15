@@ -34,7 +34,21 @@ def server_layout():
     server_layout = html.Div([
         dbc.Tabs([dbc.Tab(app_1.layout(diretoria), label="Diretoria STD", tab_id='tab-diretoria', tab_style={"marginLeft": "auto"}),
                   dbc.Tab(app_2.layout(conectividade), label="Conectividade", tab_id='tab-conectividade'),
-                  dbc.Tab(app_3.layout(sistemas), label="Sistemas", tab_id='tab-sistemas'),
+                  dbc.Tab([
+                    dbc.DropdownMenu(
+                        label="Geral",
+                        id="dropdownmenu",
+                        children=[
+                            dbc.DropdownMenuItem("Geral", id="geral"),
+                            dbc.DropdownMenuItem("SIG@", id="siga"),
+                            dbc.DropdownMenuItem("SIGAA", id="sigaa"),
+                            dbc.DropdownMenuItem("SIPAC", id="sipac"),
+                            dbc.DropdownMenuItem("SIGRH", id="sigrh"),
+                            dbc.DropdownMenuItem("Sistemas Diversos", id="sistemas-diversos"),
+                            dbc.DropdownMenuItem("Web Sites", id="web-sites"),
+                    ], right=True),
+                    html.Div(app_3.layout(sistemas), id="div-sistemas")], label="Sistemas", tab_id='tab-sistemas'),
+
                   dbc.Tab(app_4.layout(servicos_computacionais), label="Serviços Computacionais", tab_id='tab-serv-computacionais'),
                   dbc.Tab(app_5.layout(micro_informatica), label="Micro Informática", tab_id='tab-micro'),
                   dbc.Tab(app_6.layout(suporte), label="Suporte ao Usuário", tab_id='tab-suporte'),
@@ -71,12 +85,106 @@ def update_metrics(n_intervals):
     suporte = processed_data.get_data_suporte()
     components = [dbc.Tab(app_1.layout(diretoria), label="Diretoria STD", tab_id='tab-diretoria', tab_style={"marginLeft": "auto"}),
                   dbc.Tab(app_2.layout(conectividade), label="Conectividade", tab_id='tab-conectividade'),
-                  dbc.Tab(app_3.layout(sistemas), label="Sistemas", tab_id='tab-sistemas'),
+                  dbc.Tab([
+                    dbc.DropdownMenu(
+                        label="Geral",
+                        id="dropdownmenu",
+                        children=[
+                            dbc.DropdownMenuItem("Geral", id="geral"),
+                            dbc.DropdownMenuItem("SIG@", id="siga"),
+                            dbc.DropdownMenuItem("SIGAA", id="sigaa"),
+                            dbc.DropdownMenuItem("SIPAC", id="sipac"),
+                            dbc.DropdownMenuItem("SIGRH", id="sigrh"),
+                            dbc.DropdownMenuItem("Sistemas Diversos", id="sistemas-diversos"),
+                            dbc.DropdownMenuItem("Web Sites", id="web-sites"),
+                    ], right=True),
+                    html.Div(app_3.layout(sistemas), id="div-sistemas")], label="Sistemas", tab_id='tab-sistemas'),
+                  
                   dbc.Tab(app_4.layout(servicos_computacionais), label="Serviços Computacionais", tab_id='tab-serv-computacionais'),
                   dbc.Tab(app_5.layout(micro_informatica), label="Micro Informática", tab_id='tab-micro'),
                   dbc.Tab(app_6.layout(suporte), label="Suporte ao Usuário", tab_id='tab-suporte'),
                   ]
     return components
 
+
+@app.callback(
+    Output("div-sistemas", "children"),
+    [
+        Input("geral", "n_clicks"),
+        Input("siga", "n_clicks"),
+        Input("sigaa", "n_clicks"),
+        Input("sipac", "n_clicks"),
+        Input("sigrh", "n_clicks"),
+        Input("sistemas-diversos", "n_clicks"),
+        Input("web-sites", "n_clicks"),
+    ],
+)
+def update_tab(geral, siga, sigaa, sipac, sigrh, sistemas_diversos, web_sites):
+    
+    id_lookup = {
+        "geral": None,
+        "siga": "SIG@",
+        "sigaa": "SIGAA",
+        "sipac": "SIPAC",
+        "sigrh": "SIGRH",
+        "sistemas-diversos": "Sistemas Diversos",
+        "web-sites": "Web Sites"
+    }
+
+    ctx = dash.callback_context
+
+    if (geral is None
+            and siga is None
+            and sigaa is None
+            and sipac is None
+            and sigrh is None
+            and sistemas_diversos is None
+            and web_sites is None) or not ctx.triggered:
+        # if neither button has been clicked, return "Geral"
+        return app_3.layout(processed_data.get_data_sistemas())
+
+    # this gets the id of the button that triggered the callback
+    button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    return app_3.layout(processed_data.get_data_sistemas(id_lookup[button_id]))
+
+@app.callback(
+    Output("dropdownmenu", "label"),
+    [
+        Input("geral", "n_clicks"),
+        Input("siga", "n_clicks"),
+        Input("sigaa", "n_clicks"),
+        Input("sipac", "n_clicks"),
+        Input("sigrh", "n_clicks"),
+        Input("sistemas-diversos", "n_clicks"),
+        Input("web-sites", "n_clicks"),
+    ],
+)
+def update_label(geral, siga, sigaa, sipac, sigrh, sistemas_diversos, web_sites):
+
+    id_lookup = {
+        "geral": "Geral",
+        "siga": "SIG@",
+        "sigaa": "SIGAA",
+        "sipac": "SIPAC",
+        "sigrh": "SIGRH",
+        "sistemas-diversos": "Sistemas Diversos",
+        "web-sites": "Web Sites"
+    }
+
+    ctx = dash.callback_context
+    
+    if (geral is None
+            and siga is None
+            and sigaa is None
+            and sipac is None
+            and sigrh is None
+            and sistemas_diversos is None
+            and web_sites is None) or not ctx.triggered:
+        # if neither button has been clicked, return "Geral"
+        return "Geral"
+
+    # this gets the id of the button that triggered the callback
+    button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    return id_lookup[button_id]
 
 app.layout = server_layout

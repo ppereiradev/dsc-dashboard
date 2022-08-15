@@ -1,6 +1,8 @@
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+from dash.dependencies import Input, Output
+from ..app import app
 
 import plotly.graph_objects as go
 import plotly.express as px
@@ -314,8 +316,7 @@ def app_content(charts, sistemas):
         ]
     )
 
-    return html.Div([html.Div([row_1, row_2, row_3])])
-
+    return html.Div([row_1, row_2, row_3])
 
 def layout(sistemas):
     """
