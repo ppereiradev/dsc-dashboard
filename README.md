@@ -20,3 +20,10 @@ to read the documentation:
 cd docs/
 make html
 ```
+
+## Miscellaneous
+
+To delete all none images in the docker
+```bash
+docker rmi $(docker images | grep none | awk '{print $3}')
+```
