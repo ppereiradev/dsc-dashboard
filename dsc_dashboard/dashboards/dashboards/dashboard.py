@@ -11,6 +11,15 @@ from .apps import app_1, app_2, app_3, app_4, app_5, app_6
 from data_updater.data_processing.processed_data import ProcessedData
 
 processed_data = ProcessedData()
+processed_data.get_processed_data_all()
+
+diretoria = processed_data.get_data_diretoria()
+conectividade = processed_data.get_data_conectividade()
+sistemas = processed_data.get_data_sistemas()
+servicos_computacionais = processed_data.get_data_servicos_computacionais()
+micro_informatica = processed_data.get_data_micro_informatica()
+suporte = processed_data.get_data_suporte()
+
 def server_layout():
     """
     Build the first layout.
@@ -23,16 +32,7 @@ def server_layout():
     -------
     dash_html_components.html
         Html component composed of charts.
-    """
-    processed_data.get_processed_data_all()
-
-    diretoria = processed_data.get_data_diretoria()
-    conectividade = processed_data.get_data_conectividade()
-    sistemas = processed_data.get_data_sistemas()
-    servicos_computacionais = processed_data.get_data_servicos_computacionais()
-    micro_informatica = processed_data.get_data_micro_informatica()
-    suporte = processed_data.get_data_suporte()
-    
+    """    
     server_layout = html.Div([
         dbc.Tabs([dbc.Tab(app_1.layout(diretoria), label="Diretoria STD", tab_id='tab-diretoria', tab_style={"marginLeft": "auto"}),
                   dbc.Tab(app_2.layout(conectividade), label="Conectividade", tab_id='tab-conectividade'),
