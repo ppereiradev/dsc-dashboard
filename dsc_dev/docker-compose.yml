@@ -16,8 +16,7 @@ services:
              python manage.py migrate contenttypes --noinput
              python manage.py migrate sessions --noinput
              python manage.py migrate django_plotly_dash --fake --noinput
-             python manage.py default_users --username=$DJANGO_DIRETORIA_USERNAME \
-             --email=$DJANGO_DIRETORIA_EMAIL --password=$DJANGO_DIRETORIA_PASSWORD
+             python manage.py default_users --username=$DJANGO_DIRETORIA_USERNAME --email=$DJANGO_DIRETORIA_EMAIL --password=$DJANGO_DIRETORIA_PASSWORD
              python manage.py runserver 0.0.0.0:8000"
     ports:
       - 8000:8000

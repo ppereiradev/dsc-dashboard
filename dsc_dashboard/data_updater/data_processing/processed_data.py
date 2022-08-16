@@ -20,7 +20,6 @@ class ProcessedData(metaclass=Singleton):
         self.servicos_computacionais = ServicosComputacionais()
         self.micro_informatica = MicroInformatica()
         self.suporte = Suporte()
-        self.get_processed_data_all()
 
     def get_processed_data_all(self):
         self.diretoria.get_processed_data()
