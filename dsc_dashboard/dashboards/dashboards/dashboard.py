@@ -11,7 +11,11 @@ from .apps import app_1, app_2, app_3, app_4, app_5, app_6
 from data_updater.data_processing.processed_data import ProcessedData
 
 processed_data = ProcessedData()
-processed_data.get_processed_data_all()
+
+try:
+    processed_data.get_processed_data_all()
+except Exception:
+    print("Database not ready yet...")
 
 diretoria = processed_data.get_data_diretoria()
 conectividade = processed_data.get_data_conectividade()
