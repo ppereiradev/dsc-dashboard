@@ -147,7 +147,7 @@ class DataCleaning:
         self.leadtime_scatter_plot = self.leadtime_scatter_plot.dropna(axis=0, subset=['close_at'])
         
         self.leadtime_scatter_plot = self.leadtime_scatter_plot[self.leadtime_scatter_plot['state'] == 'Fechado']
-        self.leadtime_scatter_plot = self.leadtime_scatter_plot[['state', 'group', 'created_at', 'close_at']]
+        self.leadtime_scatter_plot = self.leadtime_scatter_plot[['number','state', 'group', 'created_at', 'close_at']]
         
         # keeping tickets from last 6 months only
         self.leadtime_scatter_plot = self.leadtime_scatter_plot[self.leadtime_scatter_plot['close_at'] > (datetime.now() - timedelta(days=210))]

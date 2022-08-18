@@ -216,6 +216,7 @@ def charts(suporte):
     chart_leadtime_scatter = px.scatter(df_leadtime_scatter, x='close_at', y='diff', color="mes/ano", labels={'mes/ano':"Mes/Ano"}, 
                                         hover_data={'close_at':False,
                                                     'diff':False,
+                                                    'Número':df_leadtime_scatter['number'],
                                                     'Aberto':df_leadtime_scatter['created_at'].dt.strftime('%d/%m/%y'),
                                                     'Fechado':df_leadtime_scatter['close_at'].dt.strftime('%d/%m/%y'),
                                                     'Dias':df_leadtime_scatter['diff'],
