@@ -23,7 +23,7 @@ urlpatterns = [
         success_url='reset/done/'),
         name='password_reset_confirm'
     ),
-    path('reset/done/', PasswordResetCompleteView.as_view(
+    path('reset/MQ/set-password/reset/done/', PasswordResetCompleteView.as_view(
         template_name='accounts/password_reset_complete.html'),
         name='password_reset_complete'
     ),
