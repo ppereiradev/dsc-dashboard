@@ -300,38 +300,38 @@ def app_content(charts, suporte):
     chart_satisfacao_dash = [
         
                 dcc.Graph(figure=charts["satisfacao"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # SECOND CHARTS CONTENT
     chart_estados_dash = [
                 dcc.Graph(figure=charts["estados"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # FOURTH CHARTS CONTENT 
     chart_leadtime_bar_dash = [
                 dcc.Graph(figure=charts["leadtime-bar"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # FIFTH CHARTS CONTENT
     chart_semana_dash = [
                 dcc.Graph(figure=charts["abertos-qnt-semana"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # SIXTH CHARTS CONTENT
     chart_hora_dash = [
                 dcc.Graph(figure=charts["abertos-qnt-hora"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # FOURTH CHARTS CONTENT
     chart_leadtime_scatter_dash = [
         
                 dcc.Graph(figure=charts["leadtime-scatter"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # ROWS CONTENT

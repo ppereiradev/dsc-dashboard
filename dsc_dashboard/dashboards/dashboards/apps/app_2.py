@@ -244,35 +244,35 @@ def app_content(charts, conectividade):
     chart_satisfacao_dash = [
         
                 dcc.Graph(figure=charts["satisfacao"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # SECOND CHARTS CONTENT
     chart_estados_dash = [
         
                 dcc.Graph(figure=charts["estados"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # THREE CHARTS CONTENT
     chart_leadtime_bar_dash = [
         
                 dcc.Graph(figure=charts["leadtime-bar"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # FOURTH CHARTS CONTENT
     chart_leadtime_scatter_dash = [
         
                 dcc.Graph(figure=charts["leadtime-scatter"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # FIFTH CHARTS CONTENT
     chart_leadtime_box_dash = [
         
                 dcc.Graph(figure=charts["leadtime-box"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
 

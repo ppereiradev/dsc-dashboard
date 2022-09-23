@@ -326,42 +326,42 @@ def app_content(charts, diretoria):
     chart_satisfacao_dash = [
         
                 dcc.Graph(figure=charts["satisfacao"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # SECOND CHARTS CONTENT
     chart_estados_dash = [
         
                 dcc.Graph(figure=charts["estados"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # THIRD CHARTS CONTENT
     chart_leadtime_setores_dash = [
         
                 dcc.Graph(figure=charts["leadtime-setores"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # FOURTH CHARTS CONTENT
     chart_leadtime_unidades_dash = [
         
                 dcc.Graph(figure=charts["leadtime-unidades"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # FIFTH CHARTS CONTENT
     chart_leadtime_scatter_dash = [
         
                 dcc.Graph(figure=charts["leadtime-scatter"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
     # SIXTH CHARTS CONTENT
     chart_leadtime_box_dash = [
         
                 dcc.Graph(figure=charts["leadtime-box"],
-                animate=True, config=config_plots),
+                animate=False, config=config_plots),
     ]
 
 
