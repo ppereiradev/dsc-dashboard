@@ -4,13 +4,14 @@ import pytz
 
 from tickets.models import Ticket
 
-from .constant_utils import ZAMMAD_GROUPS_TO_STD_SECTORS
+from .constant_utils import ZAMMAD_GROUPS_TO_STD_SECTORS, MONTH_NUMBER_TO_NAME
 from .data_cleaning import DataCleaning
 
        
 class Sistemas(DataCleaning):
 
     def clean_data(self, group=None):
+
         if group:
             
             # converting into pandas date format 
@@ -38,7 +39,7 @@ class Sistemas(DataCleaning):
             self.tickets = self.tickets[self.tickets['group'] == "Sistemas"]
 
     def get_by_state(self, group=None):
-        
+        # group == None means to get all data from sistemas (geral)
         self.open_tickets_previous = self.closed_tickets_previous = self.closed_tickets_total = 0
         dates_three_months_ago_from_today = pd.period_range(pd.Timestamp.now().to_period('m')-3,freq='M', 
                                                                 periods=4).strftime('%Y-%m-%d').tolist()

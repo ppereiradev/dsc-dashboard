@@ -161,9 +161,7 @@ class DataCleaning:
         self.leadtime_scatter_plot['diff'] = self.leadtime_scatter_plot['diff']/24
         self.leadtime_scatter_plot['diff'] = self.leadtime_scatter_plot['diff'].astype(int)
 
-        self.leadtime_bar_plot = pd.DataFrame(columns=['mes/ano', 'diff'])
-        for i in range(0, len(self.leadtime_scatter_plot['diff'])):
-            self.leadtime_bar_plot.loc[i] = [self.leadtime_scatter_plot['close_at'].iloc[i].date().strftime('%y-%m'), self.leadtime_scatter_plot['diff'].iloc[i]]
+        self.leadtime_bar_plot = pd.DataFrame.from_dict({"mes/ano":self.leadtime_scatter_plot['close_at'].dt.strftime('%y-%m'), "diff": self.leadtime_scatter_plot['diff']})
 
         self.leadtime_bar_plot = self.leadtime_bar_plot.groupby(['mes/ano']).mean().reset_index()
         self.leadtime_bar_plot['mes/ano'] = self.leadtime_bar_plot['mes/ano'].apply(lambda x: MONTH_NUMBER_TO_NAME[int(x.split('-')[1])] + '/' + x.split('-')[0])

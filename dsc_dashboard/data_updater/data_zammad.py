@@ -98,9 +98,9 @@ def interval_tickets(dias=120):
     print('FETCHING TICKET DATA FROM ZAMMAD...')
     while True:
         cmd =  "curl -u " + os.getenv("ZAMMAD_EMAIL") + ":" + os.getenv("ZAMMAD_PASSWORD") + " " + os.getenv("ZAMMAD_HOST") + "/api/v1/tickets/search?query=" + \
-                "created_at%3A%3E" + (pd.to_datetime("now") - pd.Timedelta(days=dias)).strftime("%Y-%m-%d") + \
-                "%20OR%20updated_at%3A%3E" + (pd.to_datetime("now") - pd.Timedelta(days=dias)).strftime("%Y-%m-%d") + \
-                "%20OR%20close_at%3A%3E" + (pd.to_datetime("now") - pd.Timedelta(days=dias)).strftime("%Y-%m-%d") + \
+                "created_at%3A%3E" + (pd.Timestamp('now') - pd.Timedelta(days=dias)).strftime("%Y-%m-%d") + \
+                "%20OR%20updated_at%3A%3E" + (pd.Timestamp('now') - pd.Timedelta(days=dias)).strftime("%Y-%m-%d") + \
+                "%20OR%20close_at%3A%3E" + (pd.Timestamp('now') - pd.Timedelta(days=dias)).strftime("%Y-%m-%d") + \
                 "?expand=true&page=" + str(page) + "&per_page=200"
         
         args = shlex.split(cmd)
