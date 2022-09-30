@@ -5,8 +5,8 @@ services:
     build:
       context: .
     restart: unless-stopped
-    container_name: dsc_dashboard_app
-    image: dsc_dashboard_app:0.2.0
+    container_name: dsc-dashboard-app
+    image: dsc-dashboard-app:1.0.0
     expose:
       - 8000
     env_file:
@@ -14,25 +14,30 @@ services:
     volumes:
       - static-data:/home/user/vol/web
     depends_on:
-      - mongodb
+      - mysql
 
-  mongodb:
-    image: mongo:latest
+  mysql:
+    image: mysql:8.0
     restart: unless-stopped
-    container_name: dsc_dashboard_mongodb
+    container_name: dsc-dashboard-mysqldb
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - 27017:27017
+      - ${MYSQL_PORT}:${MYSQL_PORT}
+    expose:
+      - ${MYSQL_PORT}
     volumes:
-      - mongodb-data:/data/db
+      - mysqldb-data:/var/lib/mysql
 
   nginx:
     build: ./nginx
     restart: unless-stopped
-    container_name: dsc_dashboard_nginx
-    image: dsc_dashboard_nginx:0.2.0
+    container_name: dsc-dashboard-nginx
+    image: dsc-dashboard-nginx:1.0.0
     volumes:
       - static-data:/vol/static
     ports:
@@ -41,7 +46,7 @@ services:
       - app
 
 volumes:
-  mongodb-data:
+  mysqldb-data:
     driver: local
   static-data:
     driver: local

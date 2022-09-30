@@ -1,7 +1,8 @@
 import pandas as pd
 from datetime import datetime, timedelta
+import pytz
 
-from ..mongo_utils import count_tickets
+from tickets.models import Ticket
 
 from .data_cleaning import DataCleaning
 
@@ -17,23 +18,13 @@ class Suporte(DataCleaning):
         last_day_three_months_ago = datetime.strptime(dates_three_months_ago_from_today[0] + " 23:59:59",
                                                     '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)
 
-        self.open_tickets_previous = count_tickets(
-            { "$and": [ 
-                        {"group": "Triagem"}, { "created_at": { "$lte": last_day_three_months_ago } } 
-                ] 
-            } )
-        self.closed_tickets_previous = count_tickets(
-            { "$and": [ 
-                        {"group": "Triagem"}, { "close_at": { "$lte": last_day_three_months_ago } } 
-                ] 
-            })
-        self.closed_tickets_total = count_tickets(
-            { "$and": [ 
-                        {"group": "Triagem"}, { "state": "closed" } 
-                ] 
-            })
-
-
+        self.open_tickets_previous = (Ticket.objects.filter(group="Triagem") & 
+                                      Ticket.objects.filter(created_at__lte=last_day_three_months_ago.replace(tzinfo=pytz.UTC))).count()
+        self.closed_tickets_previous = (Ticket.objects.filter(group="Triagem") & 
+                                      Ticket.objects.filter(close_at__lte=last_day_three_months_ago.replace(tzinfo=pytz.UTC))).count()
+        self.closed_tickets_total = (Ticket.objects.filter(group="Triagem") & 
+                                      Ticket.objects.filter(state="closed")).count()
+        
         super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous)
 
     def get_by_week(self):
@@ -66,7 +57,7 @@ class Suporte(DataCleaning):
         weekly_tickets.columns = ['criado', 'tipo']
         
         weekly_tickets['dia'] = weekly_tickets['criado'].dt.day_name()
-        weekly_tickets = weekly_tickets[weekly_tickets["criado"] >= (pd.to_datetime("now") - pd.Timedelta(days=30))]
+        weekly_tickets = weekly_tickets[weekly_tickets["criado"] >= pd.to_datetime(pd.to_datetime("now") - pd.Timedelta(days=30), unit="ns", utc=True)]
 
         day_translation = {"Monday":"Segunda",
                         "Tuesday":"Terça",
@@ -116,7 +107,9 @@ class Suporte(DataCleaning):
         self.tickets_by_hour = self.tickets.copy(deep=True)
         self.tickets_by_hour = self.tickets_by_hour[['created_at', 'create_article_type']]
         self.tickets_by_hour.columns = ['criado', 'tipo']
-        self.tickets_by_hour = self.tickets_by_hour[self.tickets_by_hour["criado"] >= (pd.to_datetime("now") - pd.Timedelta(days=30))]
+        self.tickets_by_hour = self.tickets_by_hour[self.tickets_by_hour["criado"] >= pd.to_datetime(pd.to_datetime("now") - pd.Timedelta(days=30), unit="ns", utc=True)]
+
+        self.tickets_by_hour["criado"] = pd.to_datetime(self.tickets_by_hour["criado"]) + pd.DateOffset(hours=-3)
 
         type_translation = {"email":"Portal",
                         "web":"Portal",
@@ -134,10 +127,10 @@ class Suporte(DataCleaning):
 
         for hour in hours_day:
             if int(hour) not in portal_tickets_hour['hora'].to_list():
-                portal_tickets_hour = portal_tickets_hour.append({'hora': int(hour), 'qnt': 0}, ignore_index=True)
+                portal_tickets_hour = pd.concat([portal_tickets_hour, pd.DataFrame({'hora': [int(hour)], 'qnt': [0]})], ignore_index=True)
 
             if int(hour) not in phone_tickets_hour['hora'].to_list():
-                phone_tickets_hour = phone_tickets_hour.append({'hora': int(hour), 'qnt': 0}, ignore_index=True)
+                phone_tickets_hour = pd.concat([phone_tickets_hour, pd.DataFrame({'hora': [int(hour)], 'qnt': [0]})], ignore_index=True)
 
         portal_tickets_hour = portal_tickets_hour.sort_values(by='hora').reset_index(drop=True)
         phone_tickets_hour = phone_tickets_hour.sort_values(by='hora').reset_index(drop=True)

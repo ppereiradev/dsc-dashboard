@@ -13,16 +13,15 @@ python manage.py wait_for_db
 # preparando os models para criar o banco de dados
 python manage.py makemigrations
 
-
 # criando o banco de dados para cada model
 python manage.py migrate accounts --noinput
 python manage.py migrate admin --noinput
 python manage.py migrate auth --noinput
 python manage.py migrate contenttypes --noinput
 python manage.py migrate sessions --noinput
-
-# django_plotly_dash gera um problema na migração com o mongodb, então temos que usar a flag --fake
-python manage.py migrate django_plotly_dash --fake --noinput
+python manage.py migrate django_plotly_dash --noinput
+python manage.py migrate tickets --noinput
+python manage.py migrate
 
 python manage.py default_users --superuser=yes --username=$DJANGO_SUPERUSER_USERNAME \
     --email=$DJANGO_SUPERUSER_EMAIL \

@@ -17,6 +17,7 @@ COPY ./entrypoint.sh /home/user/entrypoint.sh
 RUN python -m venv /home/user/venv && \
     mkdir -p /home/user/vol/web/media && \
     mkdir -p /home/user/vol/web/static && \
+    apt install default-libmysqlclient-dev && \
     chown -R user:user /home/user
     
 USER user

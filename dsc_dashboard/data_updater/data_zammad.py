@@ -3,10 +3,12 @@ import shlex
 import subprocess
 import json
 import os
+from dateutil.tz import gettz
 from datetime import datetime
-
-from .mongo_utils import save_data_tickets
+from tickets.models import Ticket
 from .data_processing.processed_data import ProcessedData
+from dateutil.parser import parse
+import pytz
 
 processed_data = ProcessedData()
 
@@ -42,7 +44,7 @@ def all_tickets():
         if df_aux.empty:    
             break
 
-        df = df.append(df_aux, ignore_index=True)
+        df = pd.concat([df, df_aux])
 
         print("[GETTING PAGE: " + str(page) + "]")
         page += 1
@@ -50,24 +52,27 @@ def all_tickets():
     print('ENDED FETCHING ALL TICKET DATA FROM ZAMMAD...')
 
     df = df[['created_at', 'close_at', 'updated_at', 'create_article_type', 'state', 'id', 'number', 'group']]
-
-    for i in range(0, len(df['created_at'])):
-        if df.at[i, 'created_at'] is not None:
-            df.at[i, 'created_at'] = datetime.strptime(df.at[i, 'created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
-        elif df.at[i, 'created_at'] is None:
-            df.at[i, 'created_at'] = "null"
-            
-        if df.at[i, 'close_at'] is not None:
-            df.at[i, 'close_at'] = datetime.strptime(df.at[i, 'close_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
-        elif df.at[i, 'close_at'] is None:
-            df.at[i, 'close_at'] = "null"
-
-        if df.at[i, 'updated_at'] is not None:
-            df.at[i, 'updated_at'] = datetime.strptime(df.at[i, 'updated_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
-        elif df.at[i, 'updated_at'] is None:
-            df.at[i, 'updated_at'] = "null"
-
-    save_data_tickets(df)
+    
+    df_records = df.to_dict('records')
+    
+    for record in df_records:
+        ticket, created = Ticket.objects.update_or_create(
+            number=record['number'],
+            defaults={
+                'id_ticket': record['id'],
+                'number': record['number'],
+                'created_at': parse(record['created_at']) if record['created_at'] else None,
+                'close_at': parse(record['close_at']) if record['close_at'] else None,
+                'updated_at': parse(record['updated_at']) if record['updated_at'] else None,
+                'create_article_type': record['create_article_type'],
+                'state': record['state'],
+                'group': record['group'],
+            })
+        if created:
+            print("[", ticket, "] Ticket added to database...")
+        else:
+            print("[", ticket, "] Ticket updated...")
+        
     processed_data.get_processed_data_all()
 
 
@@ -132,7 +137,7 @@ def interval_tickets(dias=120):
             if df_aux.empty:    
                 break
 
-            df = df.append(df_aux, ignore_index=True)
+            df = pd.concat([df, df_aux])
         
         if df.empty:    
             break
@@ -142,24 +147,26 @@ def interval_tickets(dias=120):
 
     df = df[['created_at', 'close_at', 'updated_at', 'create_article_type', 'state', 'id', 'number', 'group']]
 
-    for i in range(0, len(df['created_at'])):
-        if df.at[i, 'created_at'] is not None:
-            df.at[i, 'created_at'] = datetime.strptime(df.at[i, 'created_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
-        elif df.at[i, 'created_at'] is None:
-            df.at[i, 'created_at'] = "null"
-            
-        if df.at[i, 'close_at'] is not None:
-            df.at[i, 'close_at'] = datetime.strptime(df.at[i, 'close_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
-        elif df.at[i, 'close_at'] is None:
-            df.at[i, 'close_at'] = "null"
-
-        if df.at[i, 'updated_at'] is not None:
-            df.at[i, 'updated_at'] = datetime.strptime(df.at[i, 'updated_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
-        elif df.at[i, 'updated_at'] is None:
-            df.at[i, 'updated_at'] = "null"
-
     print('END FETCHING TICKET DATA FROM ZAMMAD...')
     if not df.empty:
-        save_data_tickets(df)
+        df_records = df.to_dict('records')
+
+        for record in df_records:
+            ticket, created = Ticket.objects.update_or_create(
+                number=record['number'],
+                defaults={
+                    'id_ticket': record['id'],
+                    'number': record['number'],
+                    'created_at': parse(record['created_at']) if record['created_at'] else None,
+                    'close_at': parse(record['close_at']) if record['close_at'] else None,
+                    'updated_at': parse(record['updated_at']) if record['updated_at'] else None,
+                    'create_article_type': record['create_article_type'],
+                    'state': record['state'],
+                    'group': record['group'],
+                })
+            if created:
+                print("[", ticket, "] Ticket added to database...")
+            else:
+                print("[", ticket, "] Ticket updated...")
 
     processed_data.get_processed_data_all()

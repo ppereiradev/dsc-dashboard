@@ -1,23 +1,48 @@
 version: "3.9"
 
 services:
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    container_name: dsc-dashboard-mysqldb
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PORT: ${MYSQL_PORT}
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u ${MYSQL_USER} --password=${MYSQL_PASSWORD}
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - mysqldb-data:/var/lib/mysql
+
   app:
     build:
       context: ../
       dockerfile: ./dsc_dev/Dockerfile
-    container_name: dsc_dashboard_app
-    image: dsc_dashboard_app:0.1.0
+    container_name: dsc-dashboard-app
+    image: dsc-dashboard-app:1.0.0
     command: >
-      sh -c "python manage.py wait_for_db
-             python manage.py makemigrations
+      sh -c "python manage.py makemigrations
              python manage.py migrate accounts --noinput
              python manage.py migrate admin --noinput
              python manage.py migrate auth --noinput
              python manage.py migrate contenttypes --noinput
              python manage.py migrate sessions --noinput
-             python manage.py migrate django_plotly_dash --fake --noinput
-             python manage.py default_users --username=$DJANGO_DIRETORIA_USERNAME --email=$DJANGO_DIRETORIA_EMAIL --password=$DJANGO_DIRETORIA_PASSWORD
+             python manage.py migrate django_plotly_dash --noinput
+             python manage.py migrate tickets --noinput
+             python manage.py migrate
+             python manage.py wait_for_db
+             python manage.py default_users --superuser=yes --username=$DJANGO_SUPERUSER_USERNAME --email=$DJANGO_SUPERUSER_EMAIL --password=$DJANGO_SUPERUSER_PASSWORD
+             python manage.py migrate django_plotly_dash --noinput
              python manage.py runserver 0.0.0.0:8000"
+
     ports:
       - 8000:8000
     env_file:
@@ -25,20 +50,9 @@ services:
     volumes:
       - ../dsc_dashboard:/home/user/app
     depends_on:
-      - mongodb
-
-  mongodb:
-    image: mongo:latest
-    restart: unless-stopped
-    container_name: dsc_dashboard_mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-    ports:
-      - 27017:27017
-    volumes:
-      - mongodb-data:/data/db
+      mysql:
+        condition: service_healthy
 
 volumes:
-  mongodb-data:
+  mysqldb-data:
     driver: local

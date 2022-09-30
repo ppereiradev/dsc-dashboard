@@ -40,7 +40,7 @@ class Command(BaseCommand):
         while tries < 10:
             try:
                 connection.ensure_connection()
-                #data_zammad.all_tickets()
+                data_zammad.all_tickets()
                 break
             except OperationalError:
                 self.stdout.write('Database unavailable, waiting 1 second...')

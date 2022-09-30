@@ -1,8 +1,10 @@
 import pandas as pd
 import os
+import pytz
+
 from datetime import datetime, timedelta
 
-from ..mongo_utils import get_tickets_from_db
+from tickets.models import Ticket
 
 from .constant_utils import AMOUNT_MONTHS_IN_DAYS, MONTH_NUMBER_TO_NAME, ZAMMAD_GROUPS_TO_STD_SECTORS
 
@@ -19,8 +21,10 @@ class DataCleaning:
         tickets : pd.DataFrame
             Pandas Dataframe with the Zammad tickets from MongoDB.
         """ 
-        self.tickets = get_tickets_from_db({ "$or": [ {"created_at":{"$gte": (datetime.now() - timedelta(days=AMOUNT_MONTHS_IN_DAYS)) }},
-                                             {"close_at":{"$gte": (datetime.now() - timedelta(days=AMOUNT_MONTHS_IN_DAYS)) }} ]})
+        tickets = (Ticket.objects.filter(created_at__gte=(datetime.now() - timedelta(days=AMOUNT_MONTHS_IN_DAYS)).replace(tzinfo=pytz.UTC)) | 
+                  Ticket.objects.filter(close_at__gte=(datetime.now() - timedelta(days=AMOUNT_MONTHS_IN_DAYS)).replace(tzinfo=pytz.UTC)))
+        
+        self.tickets = pd.DataFrame(list(tickets.values()))
     
     def clean_data(self):
         """
@@ -35,16 +39,16 @@ class DataCleaning:
             Pandas Dataframe with the clean data of the Zammad tickets.
         """ 
         # substituing null values for None
-        self.tickets['created_at'] = self.tickets['created_at'].map(lambda x: x if x != "null" else None)
-        self.tickets['close_at'] = self.tickets['close_at'].map(lambda x: x if x != "null" else None)
-        self.tickets['updated_at'] = self.tickets['updated_at'].map(lambda x: x if x != "null" else None)
+        # self.tickets['created_at'] = self.tickets['created_at'].map(lambda x: x if x != "null" else None)
+        # self.tickets['close_at'] = self.tickets['close_at'].map(lambda x: x if x != "null" else None)
+        # self.tickets['updated_at'] = self.tickets['updated_at'].map(lambda x: x if x != "null" else None)
         
         # converting into pandas date format 
         # and adding an offset to the hour 
         # in order to meet brazilian time
-        self.tickets['created_at'] = pd.to_datetime(self.tickets['created_at']) + pd.DateOffset(hours=-3)
-        self.tickets['close_at'] = pd.to_datetime(self.tickets['close_at']) + pd.DateOffset(hours=-3)
-        self.tickets['updated_at'] = pd.to_datetime(self.tickets['updated_at']) + pd.DateOffset(hours=-3)
+        # self.tickets['created_at'] = pd.to_datetime(self.tickets['created_at']) + pd.DateOffset(hours=-3)
+        # self.tickets['close_at'] = pd.to_datetime(self.tickets['close_at']) + pd.DateOffset(hours=-3)
+        # self.tickets['updated_at'] = pd.to_datetime(self.tickets['updated_at']) + pd.DateOffset(hours=-3)
 
         ticket_states_to_portuguese = {
             "closed":"Fechado",
@@ -91,7 +95,7 @@ class DataCleaning:
         """
         # open tickets
         open_tickets = self.tickets.copy(deep=True)
-        open_tickets = open_tickets[(open_tickets['created_at'] <= datetime.now())]
+        open_tickets = open_tickets[(open_tickets['created_at'] <= pd.to_datetime(datetime.now(), unit="ns", utc=True))]
         open_tickets = open_tickets[['created_at', 'state', 'id']]
         
         open_dict = {}
@@ -110,7 +114,7 @@ class DataCleaning:
         
         # closed tickets
         closed_tickets = self.tickets.copy(deep=True)
-        closed_tickets = closed_tickets[(closed_tickets['close_at'] <= datetime.now()) & (closed_tickets['state'] == "Fechado")]
+        closed_tickets = closed_tickets[(closed_tickets['close_at'] <= pd.to_datetime(datetime.now(), unit="ns", utc=True)) & (closed_tickets['state'] == "Fechado")]
         closed_tickets = closed_tickets[['close_at', 'state', 'id']]
         
         closed_dict = {}
@@ -150,7 +154,7 @@ class DataCleaning:
         self.leadtime_scatter_plot = self.leadtime_scatter_plot[['number','state', 'group', 'created_at', 'close_at']]
         
         # keeping tickets from last 6 months only
-        self.leadtime_scatter_plot = self.leadtime_scatter_plot[self.leadtime_scatter_plot['close_at'] > (datetime.now() - timedelta(days=210))]
+        self.leadtime_scatter_plot = self.leadtime_scatter_plot[self.leadtime_scatter_plot['close_at'] > pd.to_datetime(datetime.now() - timedelta(days=210), unit="ns", utc=True)]
 
         self.leadtime_scatter_plot['diff'] = self.leadtime_scatter_plot['close_at'] - self.leadtime_scatter_plot['created_at']
         self.leadtime_scatter_plot['diff'] = self.leadtime_scatter_plot['diff'].astype('timedelta64[h]')

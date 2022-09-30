@@ -17,6 +17,7 @@ COPY ./requirements.txt /home/user/requirements.txt
 RUN python -m venv /home/user/venv && \
     mkdir -p /home/user/vol/web/media && \
     mkdir -p /home/user/vol/web/static && \
+    apt install default-libmysqlclient-dev && \
     chown -R user:user /home/user
     
 USER user

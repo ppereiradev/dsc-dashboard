@@ -1,8 +1,9 @@
 import os
 import pandas as pd
 from datetime import datetime, timedelta
+import pytz
 
-from ..mongo_utils import count_tickets
+from tickets.models import Ticket
 
 from .constant_utils import MONTH_NUMBER_TO_NAME
 from .data_cleaning import DataCleaning
@@ -16,16 +17,9 @@ class Diretoria(DataCleaning):
         last_day_three_months_ago = datetime.strptime(dates_three_months_ago_from_today[0] + " 23:59:59",
                                                     '%Y-%m-%d %H:%M:%S').replace(day=1) - timedelta(days=1)
 
-
-        self.open_tickets_previous = count_tickets(
-            { "created_at": { "$lte": last_day_three_months_ago } }
-        )
-
-        self.closed_tickets_previous = count_tickets(
-            { "close_at": { "$lte": last_day_three_months_ago } }
-        )
-        
-        self.closed_tickets_total = count_tickets({ "state": "closed" })
+        self.open_tickets_previous = Ticket.objects.filter(created_at__lte=last_day_three_months_ago.replace(tzinfo=pytz.UTC)).count()
+        self.closed_tickets_previous = Ticket.objects.filter(close_at__lte=last_day_three_months_ago.replace(tzinfo=pytz.UTC)).count()
+        self.closed_tickets_total = Ticket.objects.filter(state="closed").count()
         
         super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous)
 
@@ -59,7 +53,7 @@ class Diretoria(DataCleaning):
         self.leadtime_scatter_plot = self.leadtime_scatter_plot[['number', 'state', 'group', 'created_at', 'close_at']]
         
         # keeping tickets from last 6 months only
-        self.leadtime_scatter_plot = self.leadtime_scatter_plot[self.leadtime_scatter_plot['close_at'] > (datetime.now() - timedelta(days=210))]
+        self.leadtime_scatter_plot = self.leadtime_scatter_plot[self.leadtime_scatter_plot['close_at'] > pd.to_datetime(datetime.now() - timedelta(days=210), unit="ns", utc=True)]
 
         self.leadtime_scatter_plot['diff'] = self.leadtime_scatter_plot['close_at'] - self.leadtime_scatter_plot['created_at']
         self.leadtime_scatter_plot['diff'] = self.leadtime_scatter_plot['diff'].astype('timedelta64[h]')
@@ -84,7 +78,7 @@ class Diretoria(DataCleaning):
         for mes in tickets_aux['mes/ano']:
             for setor in setores_list:
                 if setor not in tickets_aux[(tickets_aux['mes/ano'] == mes)]['group'].to_list():
-                    tickets_aux = tickets_aux.append({"mes/ano": mes, "group": setor, "diff": 0}, ignore_index=True)
+                    tickets_aux = pd.concat([tickets_aux, pd.DataFrame({"mes/ano": [mes], "group": [setor], "diff": [0]})], ignore_index=True)
             
         tickets_aux = tickets_aux.sort_values(by='mes/ano').reset_index(drop=True)
 
