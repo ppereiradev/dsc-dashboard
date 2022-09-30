@@ -22,6 +22,7 @@ python manage.py migrate sessions --noinput
 python manage.py migrate django_plotly_dash --noinput
 python manage.py migrate tickets --noinput
 python manage.py migrate
+python manage.py wait_for_db
 
 python manage.py default_users --superuser=yes --username=$DJANGO_SUPERUSER_USERNAME \
     --email=$DJANGO_SUPERUSER_EMAIL \
@@ -44,5 +45,10 @@ python manage.py default_users --username=$DJANGO_GOVERNANCA_USERNAME \
     --password=$DJANGO_GOVERNANCA_PASSWORD
 
 python manage.py collectstatic --noinput
+
+# só para garantir
+python manage.py makemigrations
+python manage.py migrate django_plotly_dash --noinput
+python manage.py migrate
 
 gunicorn dsc_dashboard.wsgi:application --bind 0.0.0.0:8000
