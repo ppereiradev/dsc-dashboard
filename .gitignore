@@ -130,3 +130,5 @@ dmypy.json
 
 # macbook
 .DS_Store
+
+usuarios-dashboard*
