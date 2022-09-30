@@ -38,13 +38,6 @@ class DataCleaning:
         tickets : pd.DataFrame
             Pandas Dataframe with the clean data of the Zammad tickets.
         """ 
-        # converting into pandas date format 
-        # and adding an offset to the hour 
-        # in order to meet brazilian time
-        self.tickets['created_at'] = pd.to_datetime(self.tickets['created_at']) + pd.DateOffset(hours=-3)
-        self.tickets['close_at'] = pd.to_datetime(self.tickets['close_at']) + pd.DateOffset(hours=-3)
-        self.tickets['updated_at'] = pd.to_datetime(self.tickets['updated_at']) + pd.DateOffset(hours=-3)
-
         ticket_states_to_portuguese = {
             "closed":"Fechado",
             "open":"Aberto",
