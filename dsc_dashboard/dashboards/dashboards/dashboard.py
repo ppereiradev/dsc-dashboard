@@ -16,7 +16,7 @@ try:
     processed_data.get_processed_data_all()
     diretoria = processed_data.get_data_diretoria()
     conectividade = processed_data.get_data_conectividade()
-    # sistemas = processed_data.get_data_sistemas()
+    sistemas = processed_data.get_data_sistemas()
     servicos_computacionais = processed_data.get_data_servicos_computacionais()
     micro_informatica = processed_data.get_data_micro_informatica()
     suporte = processed_data.get_data_suporte()
@@ -37,20 +37,20 @@ try:
         server_layout = html.Div([
             dbc.Tabs([dbc.Tab(app_1.layout(diretoria), label="Diretoria STD", tab_id='tab-diretoria', tab_style={"marginLeft": "auto"}),
                     dbc.Tab(app_2.layout(conectividade), label="Conectividade", tab_id='tab-conectividade'),
-                    # dbc.Tab([
-                    #     dbc.DropdownMenu(
-                    #         label="Geral",
-                    #         id="dropdownmenu",
-                    #         children=[
-                    #             dbc.DropdownMenuItem("Geral", id="geral"),
-                    #             dbc.DropdownMenuItem("SIG@", id="siga"),
-                    #             dbc.DropdownMenuItem("SIGAA", id="sigaa"),
-                    #             dbc.DropdownMenuItem("SIPAC", id="sipac"),
-                    #             dbc.DropdownMenuItem("SIGRH", id="sigrh"),
-                    #             dbc.DropdownMenuItem("Sistemas Diversos", id="sistemas-diversos"),
-                    #             dbc.DropdownMenuItem("Web Sites", id="web-sites"),
-                    #     ], right=True),
-                    #     html.Div(app_3.layout(sistemas), id="div-sistemas")], label="Sistemas", tab_id='tab-sistemas'),
+                    dbc.Tab([
+                        dbc.DropdownMenu(
+                            label="Geral",
+                            id="dropdownmenu",
+                            children=[
+                                dbc.DropdownMenuItem("Geral", id="geral"),
+                                dbc.DropdownMenuItem("SIG@", id="siga"),
+                                dbc.DropdownMenuItem("SIGAA", id="sigaa"),
+                                dbc.DropdownMenuItem("SIPAC", id="sipac"),
+                                dbc.DropdownMenuItem("SIGRH", id="sigrh"),
+                                dbc.DropdownMenuItem("Sistemas Diversos", id="sistemas-diversos"),
+                                dbc.DropdownMenuItem("Web Sites", id="web-sites"),
+                        ], right=True),
+                        html.Div(app_3.layout(sistemas), id="div-sistemas")], label="Sistemas", tab_id='tab-sistemas'),
 
                     dbc.Tab(app_4.layout(servicos_computacionais), label="Serviços Computacionais", tab_id='tab-serv-computacionais'),
                     dbc.Tab(app_5.layout(micro_informatica), label="Micro Informática", tab_id='tab-micro'),
@@ -82,27 +82,27 @@ try:
         """
         diretoria = processed_data.get_data_diretoria()
         conectividade = processed_data.get_data_conectividade()
-        # sistemas = processed_data.get_data_sistemas()
+        sistemas = processed_data.get_data_sistemas()
         servicos_computacionais = processed_data.get_data_servicos_computacionais()
         micro_informatica = processed_data.get_data_micro_informatica()
         suporte = processed_data.get_data_suporte()
 
         components = [dbc.Tab(app_1.layout(diretoria), label="Diretoria STD", tab_id='tab-diretoria', tab_style={"marginLeft": "auto"}),
                       dbc.Tab(app_2.layout(conectividade), label="Conectividade", tab_id='tab-conectividade'),
-                    # dbc.Tab([
-                    #     dbc.DropdownMenu(
-                    #         label="Geral",
-                    #         id="dropdownmenu",
-                    #         children=[
-                    #             dbc.DropdownMenuItem("Geral", id="geral"),
-                    #             dbc.DropdownMenuItem("SIG@", id="siga"),
-                    #             dbc.DropdownMenuItem("SIGAA", id="sigaa"),
-                    #             dbc.DropdownMenuItem("SIPAC", id="sipac"),
-                    #             dbc.DropdownMenuItem("SIGRH", id="sigrh"),
-                    #             dbc.DropdownMenuItem("Sistemas Diversos", id="sistemas-diversos"),
-                    #             dbc.DropdownMenuItem("Web Sites", id="web-sites"),
-                    #     ], right=True),
-                    #     html.Div(app_3.layout(sistemas), id="div-sistemas")], label="Sistemas", tab_id='tab-sistemas'),
+                      dbc.Tab([
+                        dbc.DropdownMenu(
+                            label="Geral",
+                            id="dropdownmenu",
+                            children=[
+                                dbc.DropdownMenuItem("Geral", id="geral"),
+                                dbc.DropdownMenuItem("SIG@", id="siga"),
+                                dbc.DropdownMenuItem("SIGAA", id="sigaa"),
+                                dbc.DropdownMenuItem("SIPAC", id="sipac"),
+                                dbc.DropdownMenuItem("SIGRH", id="sigrh"),
+                                dbc.DropdownMenuItem("Sistemas Diversos", id="sistemas-diversos"),
+                                dbc.DropdownMenuItem("Web Sites", id="web-sites"),
+                        ], right=True),
+                        html.Div(app_3.layout(sistemas), id="div-sistemas")], label="Sistemas", tab_id='tab-sistemas'),
                     
                       dbc.Tab(app_4.layout(servicos_computacionais), label="Serviços Computacionais", tab_id='tab-serv-computacionais'),
                       dbc.Tab(app_5.layout(micro_informatica), label="Micro Informática", tab_id='tab-micro'),

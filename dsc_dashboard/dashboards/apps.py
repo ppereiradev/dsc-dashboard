@@ -7,4 +7,4 @@ class DashboardsConfig(AppConfig):
 
     def ready(self):
         from data_updater import updater
-        #updater.start()
+        updater.start()

@@ -1,5 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
+import pytz
 
 from tickets.models import Ticket
 
@@ -11,17 +12,13 @@ class Sistemas(DataCleaning):
 
     def clean_data(self, group=None):
         if group:
-            # substituing null values for None
-            # self.tickets['created_at'] = self.tickets['created_at'].map(lambda x: x if x != "null" else None)
-            # self.tickets['close_at'] = self.tickets['close_at'].map(lambda x: x if x != "null" else None)
-            # self.tickets['updated_at'] = self.tickets['updated_at'].map(lambda x: x if x != "null" else None)
             
             # converting into pandas date format 
             # and adding an offset to the hour 
             # in order to meet brazilian time
-            # self.tickets['created_at'] = pd.to_datetime(self.tickets['created_at']) + pd.DateOffset(hours=-3)
-            # self.tickets['close_at'] = pd.to_datetime(self.tickets['close_at']) + pd.DateOffset(hours=-3)
-            # self.tickets['updated_at'] = pd.to_datetime(self.tickets['updated_at']) + pd.DateOffset(hours=-3)
+            self.tickets['created_at'] = pd.to_datetime(self.tickets['created_at']) + pd.DateOffset(hours=-3)
+            self.tickets['close_at'] = pd.to_datetime(self.tickets['close_at']) + pd.DateOffset(hours=-3)
+            self.tickets['updated_at'] = pd.to_datetime(self.tickets['updated_at']) + pd.DateOffset(hours=-3)
 
             ticket_states_to_portuguese = {
                 "closed":"Fechado",
@@ -51,9 +48,9 @@ class Sistemas(DataCleaning):
         if group:
             # getting old open tickets of Sistemas to calculate the acumulados
             self.open_tickets_previous = (Ticket.objects.filter(group=group) & 
-                                          Ticket.objects.filter(created_at__lte=last_day_three_months_ago)).count()
+                                          Ticket.objects.filter(created_at__lte=last_day_three_months_ago.replace(tzinfo=pytz.UTC))).count()
             self.closed_tickets_previous = (Ticket.objects.filter(group=group) & 
-                                            Ticket.objects.filter(close_at__lte=last_day_three_months_ago)).count()
+                                            Ticket.objects.filter(close_at__lte=last_day_three_months_ago.replace(tzinfo=pytz.UTC))).count()
             self.closed_tickets_total = (Ticket.objects.filter(group=group) & 
                                             Ticket.objects.filter(state="closed")).count()
 
@@ -66,9 +63,9 @@ class Sistemas(DataCleaning):
             for group_name in zammad_groups:
                 # getting old open tickets of Sistemas to calculate the acumulados
                 self.open_tickets_previous += (Ticket.objects.filter(group=group_name) & 
-                                              Ticket.objects.filter(created_at__lte=last_day_three_months_ago)).count()
+                                              Ticket.objects.filter(created_at__lte=last_day_three_months_ago.replace(tzinfo=pytz.UTC))).count()
                 self.closed_tickets_previous += (Ticket.objects.filter(group=group_name) & 
-                                                Ticket.objects.filter(close_at__lte=last_day_three_months_ago)).count()
+                                                Ticket.objects.filter(close_at__lte=last_day_three_months_ago.replace(tzinfo=pytz.UTC))).count()
                 self.closed_tickets_total += (Ticket.objects.filter(group=group_name) & 
                                                 Ticket.objects.filter(state="closed")).count()
 

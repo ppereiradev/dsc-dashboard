@@ -17,10 +17,10 @@ def all_tickets():
     Get all tickets from Zammad.
 
     Get all tickets from Zammad using its API, put into
-    a Pandas DataFrame, then call :func:`save_data_tickets`
-    to put all data on MongoDB. This function also converts
+    a Pandas DataFrame, then create objects from Ticket
+    to put all data on MySQL. This function also converts
     the date string from Zammad into datetime, which is needed
-    for the MongoDB.
+    for the MySQL.
     """
     df = pd.DataFrame()
     page = 1
@@ -82,9 +82,9 @@ def interval_tickets(dias=120):
 
     Get tickets from Zammad using its API, getting it from 
     last ``dias`` util today, then put them into a Pandas DataFrame,
-    call :func:`save_data_tickets` to put data on MongoDB.
+    create objects from Tickets to put data on MySQL.
     This function also converts the date string from Zammad
-    into datetime, which is needed for the MongoDB.
+    into datetime, which is needed for the MySQL.
 
     Parameters
     ----------

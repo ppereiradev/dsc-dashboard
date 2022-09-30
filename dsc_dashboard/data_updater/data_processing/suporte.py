@@ -57,7 +57,7 @@ class Suporte(DataCleaning):
         weekly_tickets.columns = ['criado', 'tipo']
         
         weekly_tickets['dia'] = weekly_tickets['criado'].dt.day_name()
-        weekly_tickets = weekly_tickets[weekly_tickets["criado"] >= pd.to_datetime(pd.to_datetime("now") - pd.Timedelta(days=30), unit="ns", utc=True)]
+        weekly_tickets = weekly_tickets[weekly_tickets["criado"] >= pd.to_datetime(pd.Timestamp('now') - pd.Timedelta(days=30), unit="ns", utc=True)]
 
         day_translation = {"Monday":"Segunda",
                         "Tuesday":"Terça",
@@ -107,7 +107,7 @@ class Suporte(DataCleaning):
         self.tickets_by_hour = self.tickets.copy(deep=True)
         self.tickets_by_hour = self.tickets_by_hour[['created_at', 'create_article_type']]
         self.tickets_by_hour.columns = ['criado', 'tipo']
-        self.tickets_by_hour = self.tickets_by_hour[self.tickets_by_hour["criado"] >= pd.to_datetime(pd.to_datetime("now") - pd.Timedelta(days=30), unit="ns", utc=True)]
+        self.tickets_by_hour = self.tickets_by_hour[self.tickets_by_hour["criado"] >= pd.to_datetime(pd.Timestamp('now') - pd.Timedelta(days=30), unit="ns", utc=True)]
 
         self.tickets_by_hour["criado"] = pd.to_datetime(self.tickets_by_hour["criado"]) + pd.DateOffset(hours=-3)
 

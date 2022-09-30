@@ -38,17 +38,12 @@ class DataCleaning:
         tickets : pd.DataFrame
             Pandas Dataframe with the clean data of the Zammad tickets.
         """ 
-        # substituing null values for None
-        # self.tickets['created_at'] = self.tickets['created_at'].map(lambda x: x if x != "null" else None)
-        # self.tickets['close_at'] = self.tickets['close_at'].map(lambda x: x if x != "null" else None)
-        # self.tickets['updated_at'] = self.tickets['updated_at'].map(lambda x: x if x != "null" else None)
-        
         # converting into pandas date format 
         # and adding an offset to the hour 
         # in order to meet brazilian time
-        # self.tickets['created_at'] = pd.to_datetime(self.tickets['created_at']) + pd.DateOffset(hours=-3)
-        # self.tickets['close_at'] = pd.to_datetime(self.tickets['close_at']) + pd.DateOffset(hours=-3)
-        # self.tickets['updated_at'] = pd.to_datetime(self.tickets['updated_at']) + pd.DateOffset(hours=-3)
+        self.tickets['created_at'] = pd.to_datetime(self.tickets['created_at']) + pd.DateOffset(hours=-3)
+        self.tickets['close_at'] = pd.to_datetime(self.tickets['close_at']) + pd.DateOffset(hours=-3)
+        self.tickets['updated_at'] = pd.to_datetime(self.tickets['updated_at']) + pd.DateOffset(hours=-3)
 
         ticket_states_to_portuguese = {
             "closed":"Fechado",

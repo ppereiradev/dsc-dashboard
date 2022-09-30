@@ -16,7 +16,7 @@ class ProcessedData(metaclass=Singleton):
     def __init__(self):
         self.diretoria = Diretoria()
         self.conectividade = Conectividade()
-        # self.sistemas = Sistemas()
+        self.sistemas = Sistemas()
         self.servicos_computacionais = ServicosComputacionais()
         self.micro_informatica = MicroInformatica()
         self.suporte = Suporte()
@@ -24,7 +24,7 @@ class ProcessedData(metaclass=Singleton):
     def get_processed_data_all(self):
         self.diretoria.get_processed_data()
         self.conectividade.get_processed_data()
-        # self.sistemas.get_processed_data()
+        self.sistemas.get_processed_data()
         self.servicos_computacionais.get_processed_data()
         self.micro_informatica.get_processed_data()
         self.suporte.get_processed_data()
@@ -35,12 +35,12 @@ class ProcessedData(metaclass=Singleton):
     def get_data_conectividade(self):
         return self.conectividade
     
-    # def get_data_sistemas(self, group=None):
-    #     if group:
-    #         self.sistemas.get_processed_data(group)
-    #     else:
-    #         self.sistemas.get_processed_data()
-    #     return self.sistemas
+    def get_data_sistemas(self, group=None):
+        if group:
+            self.sistemas.get_processed_data(group)
+        else:
+            self.sistemas.get_processed_data()
+        return self.sistemas
 
     def get_data_servicos_computacionais(self):
         return self.servicos_computacionais
