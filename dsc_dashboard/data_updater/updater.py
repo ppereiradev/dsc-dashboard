@@ -17,7 +17,7 @@ def start():
     REC = pytz.timezone("America/Recife")
     scheduler = BackgroundScheduler()
     trigger = OrTrigger([CronTrigger(day_of_week='mon-fri',hour='6-18/2',timezone=REC)])
-    scheduler.add_job(all_tickets, trigger)
+    scheduler.add_job(interval_tickets, trigger)
     trigger2 = OrTrigger([CronTrigger(day_of_week='sat',hour='23',timezone=REC)])
     scheduler.add_job(all_tickets, trigger2)
     scheduler.start()
