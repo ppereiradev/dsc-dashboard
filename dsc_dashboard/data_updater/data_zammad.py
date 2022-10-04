@@ -72,8 +72,10 @@ def all_tickets():
             print("[", ticket, "] Ticket added to database...")
         else:
             print("[", ticket, "] Ticket updated...")
-        
+    
+    print('CALLING GET_PROCESSED_DATA_ALL...')
     processed_data.get_processed_data_all()
+    print('ENDED CALLING GET_PROCESSED_DATA_ALL...')
 
 
 def interval_tickets(dias=120):
@@ -169,4 +171,6 @@ def interval_tickets(dias=120):
             else:
                 print("[", ticket, "] Ticket updated...")
 
+    print('CALLING GET_PROCESSED_DATA_ALL...')
     processed_data.get_processed_data_all()
+    print('ENDED CALLING GET_PROCESSED_DATA_ALL...')
