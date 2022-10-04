@@ -111,7 +111,8 @@ DATABASES = {
         'USER': os.getenv('MYSQL_USER'),
         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
         'HOST': os.getenv('MYSQL_HOST'),   # Or an IP Address that your DB is hosted on
-        'PORT': "3306",
+        'PORT': os.getenv('MYSQL_PORT'),
+        'CONN_MAX_AGE': "3600",
     }
 }
 
