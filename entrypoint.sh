@@ -4,9 +4,6 @@ set -e
 ls -la /home/user/vol/
 ls -la /home/user/vol/web
 
-# ajusta o pacote dash_bootstrap_components para remover o warning
-sed -i 's/import dash_html_components as html/from dash import html/g' ../venv/lib/python3.10/site-packages/dash_bootstrap_components/_table.py
-
 # para apagar o banco descomente essa linha
 #python manage.py flush --no-input
 
