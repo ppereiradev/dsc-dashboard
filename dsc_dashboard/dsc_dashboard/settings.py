@@ -107,12 +107,12 @@ WSGI_APPLICATION = 'dsc_dashboard.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'CONN_MAX_AGE': 3600,
         'NAME': os.getenv('MYSQL_DATABASE'),
         'USER': os.getenv('MYSQL_USER'),
         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
         'HOST': os.getenv('MYSQL_HOST'),   # Or an IP Address that your DB is hosted on
         'PORT': os.getenv('MYSQL_PORT'),
+        'CONN_MAX_AGE': "3600",
     }
 }
 
