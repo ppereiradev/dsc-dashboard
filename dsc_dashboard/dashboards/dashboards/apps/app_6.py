@@ -245,9 +245,9 @@ def charts(suporte):
     rowOddColor = 'white'
 
     chart_table_tickets_gt_20 = go.Figure(data=[go.Table(
-                                                    columnwidth = [40, 500, 100, 70],
+                                                    columnwidth = [40, 400, 100, 100, 70],
                                                     header=dict(
-                                                        values=['#', 'Título', 'Data de Abertura', 'Dias Aberto'],
+                                                        values=['#', 'Título', 'Fila', 'Data de Abertura', 'Dias Aberto'],
                                                         line_color='darkslategray',
                                                         fill_color=headerColor,
                                                         align=['left','center'],
@@ -255,6 +255,7 @@ def charts(suporte):
                                                     ),
                                                     cells=dict(values=[suporte.tickets_opened_more_20_days['id_ticket'],
                                                         suporte.tickets_opened_more_20_days['title'],
+                                                        suporte.tickets_opened_more_20_days['group'],
                                                         suporte.tickets_opened_more_20_days['created_at'].dt.strftime('%d/%m/%Y'),
                                                         suporte.tickets_opened_more_20_days['idade'] 
                                                     ],

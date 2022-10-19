@@ -104,3 +104,7 @@ class Diretoria(DataCleaning):
         
         self.satisfaction_customers['qnt'] = self.satisfaction_customers.index.map(tickets_aux[score_column].value_counts()).fillna(0).astype(int)
         self.satisfaction_customers['percentage'] = self.satisfaction_customers.index.map(tickets_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
+
+
+    def get_tickets_opened_more_20_days(self):
+        super().get_tickets_opened_more_20_days()

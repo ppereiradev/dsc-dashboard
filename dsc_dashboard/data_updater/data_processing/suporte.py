@@ -137,6 +137,9 @@ class Suporte(DataCleaning):
 
         self.tickets_by_hour = pd.merge(portal_tickets_hour,phone_tickets_hour, on='hora',how='inner', suffixes=('_portal', '_telefone'))
 
+    def get_tickets_opened_more_20_days(self):
+        super().get_tickets_opened_more_20_days("Triagem")
+
     def get_processed_data(self):
         super().get_processed_data()
         self.get_by_week()

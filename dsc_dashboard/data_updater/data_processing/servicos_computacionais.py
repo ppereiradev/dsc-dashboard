@@ -26,3 +26,6 @@ class ServicosComputacionais(DataCleaning):
                                       Ticket.objects.filter(state="closed")).count()
 
         super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous)
+
+    def get_tickets_opened_more_20_days(self):
+        super().get_tickets_opened_more_20_days("Serviços Computacionais")

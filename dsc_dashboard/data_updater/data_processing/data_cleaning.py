@@ -188,8 +188,25 @@ class DataCleaning:
         self.satisfaction_customers['qnt'] = self.satisfaction_customers.index.map(satisfaction_customers_aux[score_column].value_counts()).fillna(0).astype(int)
         self.satisfaction_customers['percentage'] = self.satisfaction_customers.index.map(satisfaction_customers_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
 
-    def get_tickets_opened_more_20_days(self):
-        self.tickets_opened_more_20_days = self.tickets.copy(deep=True)
+    def get_tickets_opened_more_20_days(self, group=None):
+        ticket_states_to_portuguese = {
+                "closed":"Fechado",
+                "open":"Aberto",
+                "resolvido":"Resolvido",
+                "new":"Novo",
+                "aguardando resposta":"Aguardando Resposta",
+                "pendente":"Pendente",
+                "retorno":"Retorno",
+            }
+        if group:
+            tickets = Ticket.objects.filter(group=group)
+        else:
+            tickets = Ticket.objects.all()
+        self.tickets_opened_more_20_days = pd.DataFrame(list(tickets.values()))
+        self.tickets_opened_more_20_days['state'] = self.tickets_opened_more_20_days['state'].map(ticket_states_to_portuguese)
+
+        self.tickets_opened_more_20_days = self.tickets_opened_more_20_days[self.tickets_opened_more_20_days["id_ticket"] != '2']
+        self.tickets_opened_more_20_days['group'] = self.tickets_opened_more_20_days['group'].map(ZAMMAD_GROUPS_TO_STD_SECTORS)
 
         self.tickets_opened_more_20_days = self.tickets_opened_more_20_days[
                                                         (self.tickets_opened_more_20_days['created_at'] < pd.to_datetime(datetime.now() - timedelta(days=20), unit="ns", utc=True))

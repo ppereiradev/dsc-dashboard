@@ -67,25 +67,31 @@ class Sistemas(DataCleaning):
 
     def get_tickets_opened_more_20_days(self, group=None):
 
+        
+        ticket_states_to_portuguese = {
+            "closed":"Fechado",
+            "open":"Aberto",
+            "resolvido":"Resolvido",
+            "new":"Novo",
+            "aguardando resposta":"Aguardando Resposta",
+            "pendente":"Pendente",
+            "retorno":"Retorno",
+        }
+
         if group:
-            ticket_states_to_portuguese = {
-                "closed":"Fechado",
-                "open":"Aberto",
-                "resolvido":"Resolvido",
-                "new":"Novo",
-                "aguardando resposta":"Aguardando Resposta",
-                "pendente":"Pendente",
-                "retorno":"Retorno",
-            }
-
             tickets = Ticket.objects.filter(group=group)
-            self.tickets_opened_more_20_days = pd.DataFrame(list(tickets.values()))
-            self.tickets_opened_more_20_days['state'] = self.tickets_opened_more_20_days['state'].map(ticket_states_to_portuguese)
-
         else:
-            self.tickets_opened_more_20_days = self.tickets.copy(deep=True)
+            tickets = (Ticket.objects.filter(group="SIG@") | 
+                       Ticket.objects.filter(group="SIGAA") | 
+                       Ticket.objects.filter(group="SIPAC") | 
+                       Ticket.objects.filter(group="SIGRH") | 
+                       Ticket.objects.filter(group="Sistemas Diversos") | 
+                       Ticket.objects.filter(group="Web Sites")
+                      )
+        
+        self.tickets_opened_more_20_days = pd.DataFrame(list(tickets.values()))
 
-
+        self.tickets_opened_more_20_days['state'] = self.tickets_opened_more_20_days['state'].map(ticket_states_to_portuguese)
         self.tickets_opened_more_20_days = self.tickets_opened_more_20_days[
                                                         (self.tickets_opened_more_20_days['created_at'] < pd.to_datetime(datetime.now() - timedelta(days=20), unit="ns", utc=True))
                                                         & (self.tickets_opened_more_20_days['state'] != "Fechado")]
