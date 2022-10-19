@@ -51,7 +51,7 @@ def all_tickets():
     
     print('ENDED FETCHING ALL TICKET DATA FROM ZAMMAD...')
 
-    df = df[['created_at', 'close_at', 'updated_at', 'create_article_type', 'state', 'id', 'number', 'group']]
+    df = df[['created_at', 'close_at', 'updated_at', 'create_article_type', 'state', 'id', 'number', 'group', 'title']]
     
     df_records = df.to_dict('records')
     
@@ -67,6 +67,7 @@ def all_tickets():
                 'create_article_type': record['create_article_type'],
                 'state': record['state'],
                 'group': record['group'],
+                'title': record['title'],
             })
         if created:
             print("[", ticket, "] Ticket added to database...")
@@ -125,7 +126,7 @@ def interval_tickets(dias=120):
                 print("Error fetching ticket by id!")
                 break
             
-            columns_interest = ['created_at', 'close_at', 'updated_at', 'create_article_type', 'state', 'id', 'number', 'group']
+            columns_interest = ['created_at', 'close_at', 'updated_at', 'create_article_type', 'state', 'id', 'number', 'group', 'title']
             dict_aux = {}
             for k, v in json.loads(stdout_aux.decode()).items():
                 if k in columns_interest:
@@ -165,6 +166,7 @@ def interval_tickets(dias=120):
                     'create_article_type': record['create_article_type'],
                     'state': record['state'],
                     'group': record['group'],
+                    'title': record['title'],
                 })
             if created:
                 print("[", ticket, "] Ticket added to database...")

@@ -260,6 +260,49 @@ def charts(diretoria):
 
     chart_leadtime_box.update_traces(marker_size=4)
 
+
+    # table
+    headerColor = 'grey'
+    rowEvenColor = 'rgba(0,0,0,0.05)'
+    rowOddColor = 'white'
+
+    chart_table_tickets_gt_20 = go.Figure(data=[go.Table(
+                                                    columnwidth = [40, 500, 100, 70],
+                                                    header=dict(
+                                                        values=['#', 'Título', 'Data de Abertura', 'Dias Aberto'],
+                                                        line_color='darkslategray',
+                                                        fill_color=headerColor,
+                                                        align=['left','center'],
+                                                        font=dict(color='white', size=16)
+                                                    ),
+                                                    cells=dict(values=[diretoria.tickets_opened_more_20_days['id_ticket'],
+                                                        diretoria.tickets_opened_more_20_days['title'],
+                                                        diretoria.tickets_opened_more_20_days['created_at'].dt.strftime('%d/%m/%Y'),
+                                                        diretoria.tickets_opened_more_20_days['idade'] 
+                                                    ],
+                                                    line_color='darkslategray',
+                                                    # 2-D list of colors for alternating rows
+                                                    fill_color = [[rowOddColor,rowEvenColor]
+                                                                    *(len(diretoria.tickets_opened_more_20_days['id_ticket'])-2 
+                                                                    if len(diretoria.tickets_opened_more_20_days['id_ticket']) > 2
+                                                                    else 1)],
+
+                                                    align = ['left', 'left', 'center'],
+                                                    font = dict(color = 'darkslategray', size = 14)
+                                                    
+                                                    ))
+                                                ])
+
+    chart_table_tickets_gt_20.update_layout(
+        title="Número de Chamados Abertos há Mais de 20 dias<br><sup></sup>"
+              + "<sup>Número Total: " + str(diretoria.tickets_opened_more_20_days.count()[0]) + "</sup>",
+        paper_bgcolor='white',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font={'color':'#252422', "family":"Montserrat"},
+        height=500,
+        margin=dict(l=50, r=10, t=100, b=40),   
+    )
+
     
 
     return {"satisfacao": chart_satisfacao,
@@ -268,6 +311,7 @@ def charts(diretoria):
             "leadtime-unidades": chart_leadtime_unidades,
             "leadtime-scatter": chart_leadtime_scatter,
             "leadtime-box": chart_leadtime_box,
+            "table-tickets-gt-20": chart_table_tickets_gt_20,
             }
 
 
@@ -365,6 +409,12 @@ def app_content(charts, diretoria):
     ]
 
 
+    chart_table_tickets_gt_20 = [
+                dcc.Graph(figure=charts["table-tickets-gt-20"],
+                animate=False, config=config_plots),
+        
+    ]
+
     # ROWS CONTENT 
     row_1 = html.Div(
         [
@@ -405,8 +455,21 @@ def app_content(charts, diretoria):
         ]
     )
 
-    return html.Div([html.Div([row_1, row_2, row_3])])
+    if len(diretoria.tickets_opened_more_20_days['title']) > 0:
+        row_4 = html.Div(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(dbc.Card(chart_table_tickets_gt_20, className='shadow cards-info'), className='mb-4 col-lg-12 col-md-12 col-sm-12 col-xs-12 col-12'),
+                    ], className='justify-content-center',
+                ),
+            ]
+        )
 
+        return html.Div([html.Div([row_1, row_2, row_3, row_4])])
+    
+    else:
+        return html.Div([html.Div([row_1, row_2, row_3])])
 
 def layout(diretoria):
     """

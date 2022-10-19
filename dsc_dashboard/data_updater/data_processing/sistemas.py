@@ -65,9 +65,39 @@ class Sistemas(DataCleaning):
 
             super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous)
 
+    def get_tickets_opened_more_20_days(self, group=None):
+
+        if group:
+            ticket_states_to_portuguese = {
+                "closed":"Fechado",
+                "open":"Aberto",
+                "resolvido":"Resolvido",
+                "new":"Novo",
+                "aguardando resposta":"Aguardando Resposta",
+                "pendente":"Pendente",
+                "retorno":"Retorno",
+            }
+
+            tickets = Ticket.objects.filter(group=group)
+            self.tickets_opened_more_20_days = pd.DataFrame(list(tickets.values()))
+            self.tickets_opened_more_20_days['state'] = self.tickets_opened_more_20_days['state'].map(ticket_states_to_portuguese)
+
+        else:
+            self.tickets_opened_more_20_days = self.tickets.copy(deep=True)
+
+
+        self.tickets_opened_more_20_days = self.tickets_opened_more_20_days[
+                                                        (self.tickets_opened_more_20_days['created_at'] < pd.to_datetime(datetime.now() - timedelta(days=20), unit="ns", utc=True))
+                                                        & (self.tickets_opened_more_20_days['state'] != "Fechado")]
+        
+        self.tickets_opened_more_20_days["idade"] = pd.to_datetime(datetime.now(), unit="ns", utc=True) - self.tickets_opened_more_20_days['created_at']
+        self.tickets_opened_more_20_days["idade"] = self.tickets_opened_more_20_days["idade"].dt.days
+
+
     def get_processed_data(self, group=None):
         self.get_data_from_last_four_months()
         self.clean_data(group)
         self.get_by_state(group)
         self.get_leadtime()
         self.get_satisfaction()
+        self.get_tickets_opened_more_20_days(group)

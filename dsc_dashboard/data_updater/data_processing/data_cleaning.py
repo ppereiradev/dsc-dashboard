@@ -188,9 +188,20 @@ class DataCleaning:
         self.satisfaction_customers['qnt'] = self.satisfaction_customers.index.map(satisfaction_customers_aux[score_column].value_counts()).fillna(0).astype(int)
         self.satisfaction_customers['percentage'] = self.satisfaction_customers.index.map(satisfaction_customers_aux[score_column].value_counts(normalize=True) * 100).fillna(0).astype(float)
 
+    def get_tickets_opened_more_20_days(self):
+        self.tickets_opened_more_20_days = self.tickets.copy(deep=True)
+
+        self.tickets_opened_more_20_days = self.tickets_opened_more_20_days[
+                                                        (self.tickets_opened_more_20_days['created_at'] < pd.to_datetime(datetime.now() - timedelta(days=20), unit="ns", utc=True))
+                                                         & (self.tickets_opened_more_20_days['state'] != "Fechado")]
+        
+        self.tickets_opened_more_20_days["idade"] = pd.to_datetime(datetime.now(), unit="ns", utc=True) - self.tickets_opened_more_20_days['created_at']
+        self.tickets_opened_more_20_days["idade"] = self.tickets_opened_more_20_days["idade"].dt.days
+
     def get_processed_data(self):
         self.get_data_from_last_four_months()
         self.clean_data()
         self.get_by_state()
         self.get_leadtime()
         self.get_satisfaction()
+        self.get_tickets_opened_more_20_days()
