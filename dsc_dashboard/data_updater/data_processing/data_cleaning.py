@@ -46,6 +46,7 @@ class DataCleaning:
             "aguardando resposta":"Aguardando Resposta",
             "pendente":"Pendente",
             "retorno":"Retorno",
+            "merged":"merged",
         }
 
         self.tickets = self.tickets[self.tickets['state'] != 'merged']
@@ -199,6 +200,7 @@ class DataCleaning:
                 "aguardando resposta":"Aguardando Resposta",
                 "pendente":"Pendente",
                 "retorno":"Retorno",
+                "merged":"merged",
             }
         if group:
             tickets = Ticket.objects.filter(group=group)
@@ -213,7 +215,8 @@ class DataCleaning:
         self.tickets_opened_more_20_days = self.tickets_opened_more_20_days[
                                                         (self.tickets_opened_more_20_days['created_at'] < pd.to_datetime(datetime.now() - timedelta(days=20), unit="ns", utc=True))
                                                          & (self.tickets_opened_more_20_days['state'] != "Fechado")
-                                                         & (self.tickets_opened_more_20_days['state'] != "merged")]
+                                                         & (self.tickets_opened_more_20_days['state'] != "merged")
+                                                         & (self.tickets_opened_more_20_days['state'].notnull())]
         
         self.tickets_opened_more_20_days["idade"] = pd.to_datetime(datetime.now(), unit="ns", utc=True) - self.tickets_opened_more_20_days['created_at']
         self.tickets_opened_more_20_days["idade"] = self.tickets_opened_more_20_days["idade"].dt.days

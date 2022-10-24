@@ -21,6 +21,7 @@ class Sistemas(DataCleaning):
                 "aguardando resposta":"Aguardando Resposta",
                 "pendente":"Pendente",
                 "retorno":"Retorno",
+                "merged":"merged",
             }
 
             self.tickets['state'] = self.tickets['state'].map(ticket_states_to_portuguese)
@@ -29,6 +30,8 @@ class Sistemas(DataCleaning):
         else:
             super().clean_data()
             self.tickets = self.tickets[self.tickets['group'] == "Sistemas"]
+
+        self.tickets = self.tickets[self.tickets['state'] != 'merged']
 
     def get_by_state(self, group=None):
         # group == None means to get all data from sistemas (geral)
@@ -76,6 +79,7 @@ class Sistemas(DataCleaning):
             "aguardando resposta":"Aguardando Resposta",
             "pendente":"Pendente",
             "retorno":"Retorno",
+            "merged":"merged",
         }
 
         if group:
@@ -95,7 +99,8 @@ class Sistemas(DataCleaning):
         self.tickets_opened_more_20_days = self.tickets_opened_more_20_days[
                                                         (self.tickets_opened_more_20_days['created_at'] < pd.to_datetime(datetime.now() - timedelta(days=20), unit="ns", utc=True))
                                                         & (self.tickets_opened_more_20_days['state'] != "Fechado")
-                                                        & (self.tickets_opened_more_20_days['state'] != "merged")]
+                                                        & (self.tickets_opened_more_20_days['state'] != "merged")
+                                                        & (self.tickets_opened_more_20_days['state'].notnull())]
         
         self.tickets_opened_more_20_days["idade"] = pd.to_datetime(datetime.now(), unit="ns", utc=True) - self.tickets_opened_more_20_days['created_at']
         self.tickets_opened_more_20_days["idade"] = self.tickets_opened_more_20_days["idade"].dt.days
