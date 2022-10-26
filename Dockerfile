@@ -18,6 +18,7 @@ RUN python -m venv /home/user/venv && \
     mkdir -p /home/user/vol/web/media && \
     mkdir -p /home/user/vol/web/static && \
     apt-get install default-libmysqlclient-dev && \
+    apt-get install libpq-dev&& \
     chown -R user:user /home/user
     
 USER user
@@ -26,7 +27,7 @@ ENV PATH="/home/user/venv/bin:$PATH"
 
 # install dependencies and commands
 RUN pip install --upgrade pip && \
-    pip install -r /home/user/requirements.txt
+    pip install -r /home/user/requirements.txt --use-pep517
 
 WORKDIR /home/user/app
 

@@ -18,6 +18,7 @@ RUN python -m venv /home/user/venv && \
     mkdir -p /home/user/vol/web/media && \
     mkdir -p /home/user/vol/web/static && \
     apt-get install default-libmysqlclient-dev && \
+    apt-get install libpq-dev && \
     chown -R user:user /home/user
     
 USER user
