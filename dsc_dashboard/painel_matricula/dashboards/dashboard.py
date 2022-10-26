@@ -26,7 +26,7 @@ try:
                                 ])
         return server_layout
 
-    @app.callback(Output('matriculas-chart', 'children'),[Input('interval-component', 'n_intervals')])
+    @app.callback(Output('matricula-chart', 'children'),[Input('interval-component', 'n_intervals')])
     def update_metrics(n_intervals):
         matriculas = consulta.get_matriculas()
         components = [
