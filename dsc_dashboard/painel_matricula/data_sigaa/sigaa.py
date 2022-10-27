@@ -17,7 +17,7 @@ class ConsultaSIGAA:
                 INNER JOIN discente d 
                 ON sm.id_discente  = d.id_discente 
                 WHERE sm.data_solicitacao > '2022-10-25' 
-                AND sm.data_solicitacao < '2022-10-27' 
+                AND sm.data_solicitacao < '2022-10-28' 
                 GROUP BY sm.id_discente 
                 ORDER BY DATA_SOLICITACAO;'''
 
