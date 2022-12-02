@@ -18,7 +18,9 @@ services:
         condition: service_healthy
 
   mysql:
-    build: ./mysql
+    build:
+      context: ./
+      dockerfile: ./mysql/Dockerfile
     restart: unless-stopped
     container_name: dsc-dashboard-mysqldb
     environment:
@@ -40,7 +42,9 @@ services:
       - mysqldb-data:/var/lib/mysql
 
   nginx:
-    build: ./nginx
+    build:
+      context: ./
+      dockerfile: ./nginx/Dockerfile
     restart: unless-stopped
     container_name: dsc-dashboard-nginx
     image: dsc-dashboard-nginx:1.0.0
