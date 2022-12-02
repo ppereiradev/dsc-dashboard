@@ -26,7 +26,7 @@ class Conectividade(DataCleaning):
         self.closed_tickets_total = (Ticket.objects.filter(group="Conectividade") & 
                                       Ticket.objects.filter(state="closed")).count()
 
-        super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous)
+        super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous, "Conectividade")
 
     def get_tickets_opened_more_20_days(self):
         super().get_tickets_opened_more_20_days("Conectividade")

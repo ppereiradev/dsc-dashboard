@@ -3,6 +3,7 @@ import os
 import pytz
 
 from datetime import datetime, timedelta
+from dateutil.parser import parse
 
 from tickets.models import Ticket
 
@@ -55,7 +56,7 @@ class DataCleaning:
         self.tickets['group'] = self.tickets['group'].map(ZAMMAD_GROUPS_TO_STD_SECTORS)
 
     
-    def get_by_state(self, dates_three_months_ago_from_today, open_tickets_previous, closed_tickets_previous):
+    def get_by_state(self, dates_three_months_ago_from_today, open_tickets_previous, closed_tickets_previous, group):
         """
         Group data by state.
 
@@ -84,58 +85,81 @@ class DataCleaning:
         acumulados : int
             Integer represents the number of tickets that is still open.
         """
-        # open tickets
-        open_tickets = self.tickets.copy(deep=True)
-        open_tickets = open_tickets[(open_tickets['created_at'] <= pd.to_datetime(datetime.now(), unit="ns", utc=True))]
-        open_tickets = open_tickets[['created_at', 'state', 'id']]
-        
-        open_dict = {}
-        for date in dates_three_months_ago_from_today:
-            date_aux = pd.to_datetime(date).date().strftime('%y-%m')
-            open_dict[
-                    MONTH_NUMBER_TO_NAME[int(date_aux.split('-')[1])] + '/' +  date_aux.split('-')[0]
-                ] = open_tickets[
-                            (open_tickets['created_at'].dt.month == pd.to_datetime(date).month)
-                        ]['id'].count()
 
-        open_tickets = pd.DataFrame(open_dict.values(), index=open_dict.keys(), columns=['qnt'])
-        open_tickets.index.name = 'mes/ano'
+        # accumulated provisorio
+        if group == "Diretoria":
+            tickets = Ticket.objects.all()
+        elif type(group) is list:
+            tickets = Ticket.objects.filter(group__in=group)
+        elif type(group) is str:
+            tickets = Ticket.objects.filter(group=group)
 
-        self.open_tickets_current_month = open_tickets['qnt'][-1]
+
+        df_tickets = pd.DataFrame(list(tickets.values()))
+        df_tickets = df_tickets[df_tickets["state"] != "merged"]
+
+        # recuperando os tickets abertos por mês durante os últimos meses
+        aux_open_tickets = self._get_tickets_monthly_by_state(
+            df_tickets[
+                df_tickets["created_at"]
+                > pd.to_datetime(
+                    parse("2021-09-30 00:00:00-03:00"),
+                    unit="ns",
+                    utc=True,
+                )
+            ],
+            "created_at",
+        )
+
+        aux_open_tickets.drop("created_at", inplace=True, axis=1)
+        aux_open_tickets.rename(columns={"id_ticket": "qnt"}, inplace=True)
         
-        # closed tickets
-        closed_tickets = self.tickets.copy(deep=True)
-        closed_tickets = closed_tickets[(closed_tickets['close_at'] <= pd.to_datetime(datetime.now(), unit="ns", utc=True)) & (closed_tickets['state'] == "Fechado")]
-        closed_tickets = closed_tickets[['close_at', 'state', 'id']]
+        # recuperando os tickets fechados por mês durante os últimos meses
+        aux_closed_tickets = df_tickets.dropna(axis=0, subset=["close_at"])
+        aux_closed_tickets = self._get_tickets_monthly_by_state(aux_closed_tickets, "close_at")
         
-        closed_dict = {}
-        for date in dates_three_months_ago_from_today:
-            date_aux = pd.to_datetime(date).date().strftime('%y-%m')
-            closed_dict[
-                    MONTH_NUMBER_TO_NAME[int(date_aux.split('-')[1])] + '/' +  date_aux.split('-')[0]
-                ] = closed_tickets[
-                            (closed_tickets['close_at'].dt.month == pd.to_datetime(date).month)
-                        ]['id'].count()
-        
-        closed_tickets = pd.DataFrame(closed_dict.values(), index=closed_dict.keys(), columns=['qnt'])
-        closed_tickets.index.name = 'mes/ano'
-        
-        self.closed_tickets_current_month = closed_tickets['qnt'][-1]
+        aux_closed_tickets.drop("close_at", inplace=True, axis=1)
+        aux_closed_tickets.rename(columns={"id_ticket": "qnt"}, inplace=True)
+
+        accumulated_tickets = aux_open_tickets.copy(deep=True)
+        accumulated_tickets = accumulated_tickets.assign(qnt=0)
         
         # accumulated
-        accumulated_tickets = open_tickets.copy(deep=True)
-        accumulated_tickets.iloc[0, 0] += open_tickets_previous - (closed_tickets.iloc[0, 0] + closed_tickets_previous)
+        for i in range(len(aux_open_tickets)):
+            if i < 1:
+                accumulated_tickets.at[i, "qnt"] = (
+                    aux_open_tickets["qnt"][i] - aux_closed_tickets["qnt"][i]
+                )
+            else:
+                accumulated_tickets.at[i, "qnt"] = (
+                    aux_open_tickets["qnt"][i]
+                    - aux_closed_tickets["qnt"][i]
+                    + accumulated_tickets["qnt"][i - 1]
+                )
+
+        inner_merge = pd.merge(aux_open_tickets, aux_closed_tickets, on=["mes/ano"])
         
-        for i in range(1, len(dates_three_months_ago_from_today)):
-            accumulated_tickets.iloc[i, 0] += accumulated_tickets.iloc[i - 1, 0] - closed_tickets.iloc[i, 0]
-
-        self.num_accumulated_tickets = accumulated_tickets['qnt'][-1]
-
         # COMPLETE DATAFRAME
-        self.num_tickets_by_state = pd.merge(open_tickets,closed_tickets, on='mes/ano',how='inner')
-        self.num_tickets_by_state = pd.merge(self.num_tickets_by_state,accumulated_tickets, on='mes/ano',how='inner')
-        self.num_tickets_by_state.columns = ['abertos', 'fechados', 'acumulados']    
-    
+        self.num_tickets_by_state = pd.merge(
+            inner_merge, accumulated_tickets, on=["mes/ano"]
+        )
+
+        self.num_tickets_by_state.rename(
+            columns={
+                "qnt_x": "abertos",
+                "qnt_y": "fechados",
+                "qnt": "acumulados",
+            },
+            inplace=True,
+        )
+        
+        # setting mes/ano as index and getting last 5 months
+        self.num_tickets_by_state.set_index('mes/ano', inplace=True)
+        self.num_tickets_by_state = self.num_tickets_by_state.iloc[-5:]
+
+        self.open_tickets_current_month = self.num_tickets_by_state['abertos'].iloc[-1]
+        self.closed_tickets_current_month = self.num_tickets_by_state['fechados'].iloc[-1]
+        self.num_accumulated_tickets = self.num_tickets_by_state['acumulados'].iloc[-1]
     
     def get_leadtime(self):
         self.leadtime_scatter_plot = self.tickets.copy(deep=True)
@@ -228,3 +252,37 @@ class DataCleaning:
         self.get_leadtime()
         self.get_satisfaction()
         self.get_tickets_opened_more_20_days()
+
+
+    # métodos internos para limpar, e transformar os dados dos tickets
+    def _close_date_to_month_year(self, df_temp):
+        MONTH_NUMBER_TO_WORD = {
+            1: "Janeiro",
+            2: "Fevereiro",
+            3: "Março",
+            4: "Abril",
+            5: "Maio",
+            6: "Junho",
+            7: "Julho",
+            8: "Agosto",
+            9: "Setembro",
+            10: "Outubro",
+            11: "Novembro",
+            12: "Dezembro",
+        }
+        df_temp = df_temp.sort_values(by="mes/ano").reset_index(drop=True)
+        df_temp["mes/ano"] = df_temp["mes/ano"].apply(
+            lambda x: MONTH_NUMBER_TO_WORD[int(x.split("-")[1])] + "/" + x.split("-")[0]
+        )
+
+        return df_temp
+
+    def _get_tickets_monthly_by_state(self, df_temp, state):
+        df_temp = df_temp.set_index(state)
+        df_temp = df_temp.groupby(pd.Grouper(freq="M"))
+        df_temp = df_temp["id_ticket"].count().reset_index()
+
+        df_temp["mes/ano"] = df_temp[state].dt.strftime("%y-%m")
+        df_temp = self._close_date_to_month_year(df_temp)
+
+        return df_temp

@@ -1,27 +1,6 @@
 version: "3.9"
 
 services:
-
-  mysql:
-    build: ../mysql
-    restart: unless-stopped
-    container_name: dsc-dashboard-mysqldb
-    environment:
-      MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_PORT: ${MYSQL_PORT}
-    healthcheck:
-      test: mysqladmin ping -h 127.0.0.1 -u ${MYSQL_USER} --password=${MYSQL_PASSWORD}
-    ports:
-      - 3306:3306
-    expose:
-      - 3306
-    volumes:
-      - mysqldb-data:/var/lib/mysql
-
   app:
     build:
       context: ../
@@ -43,9 +22,10 @@ services:
              python manage.py default_users --superuser=yes --username=$DJANGO_SUPERUSER_USERNAME --email=$DJANGO_SUPERUSER_EMAIL --password=$DJANGO_SUPERUSER_PASSWORD
              python manage.py migrate django_plotly_dash --noinput
              python manage.py runserver 0.0.0.0:8000"
-
     ports:
       - 8000:8000
+    expose:
+      - 8000
     env_file:
       - .env
     volumes:
@@ -53,6 +33,30 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+
+  mysql:
+    build:
+      context: ../
+      dockerfile: ./mysql/Dockerfile
+    restart: unless-stopped
+    container_name: dsc-dashboard-mysqldb
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PORT: ${MYSQL_PORT}
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u ${MYSQL_USER} --password=${MYSQL_PASSWORD}
+      interval: 10s
+      retries: 10
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - mysqldb-data:/var/lib/mysql
 
 volumes:
   mysqldb-data:

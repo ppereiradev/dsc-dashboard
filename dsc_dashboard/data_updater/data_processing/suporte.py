@@ -25,7 +25,7 @@ class Suporte(DataCleaning):
         self.closed_tickets_total = (Ticket.objects.filter(group="Triagem") & 
                                       Ticket.objects.filter(state="closed")).count()
         
-        super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous)
+        super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous, "Triagem")
 
     def get_by_week(self):
         """

@@ -22,7 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('django_plotly_dash/', include('django_plotly_dash.urls')),
     path('', include(('dashboards.urls', 'dashboards'), namespace='dashboards')),
-    path('painel_matricula/', include(('painel_matricula.urls', 'painel_matricula'), namespace='painel_matricula')),
+    #path('painel_matricula/', include(('painel_matricula.urls', 'painel_matricula'), namespace='painel_matricula')),
     path('accounts/', include('accounts.urls')),
 ]
 

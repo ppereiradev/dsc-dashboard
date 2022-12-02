@@ -21,7 +21,7 @@ class Diretoria(DataCleaning):
         self.closed_tickets_previous = Ticket.objects.filter(close_at__lte=last_day_three_months_ago.replace(tzinfo=pytz.UTC)).count()
         self.closed_tickets_total = Ticket.objects.filter(state="closed").count()
         
-        super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous)
+        super().get_by_state(dates_three_months_ago_from_today, self.open_tickets_previous, self.closed_tickets_previous, "Diretoria")
 
     
     def get_leadtime(self):

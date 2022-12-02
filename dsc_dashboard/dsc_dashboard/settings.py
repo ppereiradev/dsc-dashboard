@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'dashboards.apps.DashboardsConfig',
     'tickets',
-    'painel_matricula',
+    #'painel_matricula',
 ]
 
 # DJANGO-PLOTLY-DASH
